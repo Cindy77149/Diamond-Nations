@@ -108,7 +108,7 @@
             <div class="hc-stat"><div class="hc-stat-val" id="hc-bull-cnt">0/9</div><div class="hc-stat-lbl">牛棚</div></div>
           </div>
         </div>
-        <div class="home-card collection-home-card" onclick="goScreen('gacha')">
+        <div class="home-card collection-home-card" onclick="goScreen('collection')">
           <div class="collection-home-head">
             <div class="hc-label">球員收藏</div>
             <div class="hc-ovr" id="hc-col-count" style="color:#d4a017">0</div>
@@ -144,6 +144,72 @@
     <div class="nav-item" onclick="goScreen('team')"><div class="nav-icon">⚾</div><div class="nav-lbl">組隊</div></div>
     <div class="nav-item" onclick="goScreen('match')"><div class="nav-icon">🎮</div><div class="nav-lbl">比賽</div></div>
     <div class="nav-item" onclick="goScreen('coach')"><div class="nav-icon">🧑‍🏫</div><div class="nav-lbl">教練</div></div>
+  </div>
+</div>
+
+<!-- ── 球員收藏 ── -->
+<div class="screen" id="sc-collection">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">📚 球員收藏</div></div>
+  </div>
+  <div class="scroll">
+    <div class="collection-page-head">
+      <div class="collection-page-kicker">PLAYER COLLECTION</div>
+      <div class="collection-page-title-row">
+        <div>
+          <div class="collection-page-title">我的收藏</div>
+          <div class="collection-page-sub" id="collection-page-sub">已收集 0 張球員卡</div>
+        </div>
+        <div class="collection-page-total" id="collection-page-total">0</div>
+      </div>
+      <div class="collection-page-stats">
+        <div class="collection-page-stat">
+          <div class="collection-page-stat-val" id="collection-nation-count">0</div>
+          <div class="collection-page-stat-lbl">本國</div>
+        </div>
+        <div class="collection-page-stat">
+          <div class="collection-page-stat-val" id="collection-hitter-count">0</div>
+          <div class="collection-page-stat-lbl">野手</div>
+        </div>
+        <div class="collection-page-stat">
+          <div class="collection-page-stat-val" id="collection-pitcher-count">0</div>
+          <div class="collection-page-stat-lbl">投手</div>
+        </div>
+      </div>
+    </div>
+    <div class="collection-controls">
+      <div class="collection-select-scroll">
+        <div class="collection-select-grid">
+          <div class="collection-select-card" id="collection-status-wrap">
+            <span class="collection-select-kicker">收藏</span>
+            <button class="collection-select-btn" id="collection-status-btn" type="button" onclick="toggleCollectionDropdown('status')">
+              <span id="collection-status-label">全部</span>
+            </button>
+            <div class="collection-dropdown-menu" id="collection-status-menu"></div>
+          </div>
+          <div class="collection-select-card" id="collection-nation-wrap">
+            <span class="collection-select-kicker">國家</span>
+            <button class="collection-select-btn" id="collection-nation-btn" type="button" onclick="toggleCollectionDropdown('nation')">
+              <span id="collection-nation-label">全部國家</span>
+            </button>
+            <div class="collection-dropdown-menu" id="collection-nation-menu"></div>
+          </div>
+          <div class="collection-select-card" id="collection-type-wrap">
+            <span class="collection-select-kicker">類型</span>
+            <button class="collection-select-btn" id="collection-type-btn" type="button" onclick="toggleCollectionDropdown('type')">
+              <span id="collection-type-label">全部</span>
+            </button>
+            <div class="collection-dropdown-menu" id="collection-type-menu"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="collection-picker-overlay" id="collection-picker-overlay" onclick="closeCollectionPicker(event)">
+      <div class="collection-picker-sheet" onclick="event.stopPropagation()">
+        <div class="collection-picker-options" id="collection-picker-options"></div>
+      </div>
+    </div>
+    <div class="collection-grid" id="collection-grid"></div>
   </div>
 </div>
 

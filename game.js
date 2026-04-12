@@ -52,6 +52,11 @@ let dragSlotContext=null;
 let swapSelection=null;
 let recruitTab='scout';
 let scoutCountdownTimer=null;
+let collectionStatusFilter='all';
+let collectionNationFilter='all';
+let collectionTypeFilter='all';
+let collectionDropdownOpen=null;
+let collectionDropdownOptions={status:[],nation:[],type:[]};
 // sync initial state
 syncFromState();
 
@@ -253,7 +258,6 @@ function buildNationStarterRoster(nation, legendName){
   const rosterOutfielders=()=>roster.filter(player=>!isPitcherPlayer(player)&&['LF','CF','RF','OF'].some(pos=>hasPos(player,pos)));
   const rosterPitchers=()=>roster.filter(player=>isPitcherPlayer(player));
   const rosterSPs=()=>roster.filter(player=>hasPos(player,'SP')||(!hasPos(player,'RP')&&!hasPos(player,'CP')&&player.pit));
-  const rosterRPs=()=>roster.filter(player=>hasPos(player,'RP'));
   const rosterCPs=()=>roster.filter(player=>hasPos(player,'CP'));
   const fillRoster=(predicate,targetCount)=>{
     while(!targetCount()){
@@ -295,6 +299,7 @@ function applyNationBranding(nation){
 function renderMainScreens(){
   buildBanner();
   renderHome();
+  renderCollection();
   applyRecruitTab();
   renderScoutScreen();
   renderFilterTabs();
@@ -596,6 +601,7 @@ function goScreen(id){
   if(id==='team')refreshTeamUI({switchTab:'bat'});
   if(id==='match')renderMatchSetup();
   if(id==='home')renderHome();
+  if(id==='collection')renderCollection();
   if(id==='coach')renderCoach();
   if(id==='gacha'){applyRecruitTab();if(recruitTab==='scout')renderScoutScreen();}
   if(id==='settings')updateSettingsStats();
@@ -706,6 +712,159 @@ function renderHome(){
     alFrag.appendChild(r);
   });
   al.innerHTML='';al.appendChild(alFrag);
+}
+
+/* ═══ COLLECTION ═══ */
+function setCollectionStatusFilter(filter){
+  collectionStatusFilter=filter;
+  closeCollectionDropdown();
+  renderCollection();
+}
+function setCollectionNationFilter(filter){
+  collectionNationFilter=filter;
+  closeCollectionDropdown();
+  renderCollection();
+}
+function setCollectionTypeFilter(filter){
+  collectionTypeFilter=filter;
+  closeCollectionDropdown();
+  renderCollection();
+}
+function closeCollectionDropdown(){
+  collectionDropdownOpen=null;
+  ['status','nation','type'].forEach(key=>{
+    document.getElementById(`collection-${key}-wrap`)?.classList.remove('open');
+  });
+}
+function toggleCollectionDropdown(key){
+  if(collectionDropdownOpen===key){closeCollectionPicker();return;}
+  closeCollectionDropdown();
+  collectionDropdownOpen=key;
+  const wrap=document.getElementById(`collection-${key}-wrap`);
+  const overlay=document.getElementById('collection-picker-overlay');
+  const sheet=overlay?.querySelector('.collection-picker-sheet');
+  wrap?.classList.add('open');
+  const optionsWrap=document.getElementById('collection-picker-options');
+  if(optionsWrap){
+    const frag=document.createDocumentFragment();
+    (collectionDropdownOptions[key]||[]).forEach(option=>{
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='collection-dropdown-opt'+(option.active?' active':'');
+      btn.textContent=option.label;
+      btn.onclick=()=>{
+        optionsWrap.querySelectorAll('.collection-dropdown-opt').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        option.onPick();
+      };
+      frag.appendChild(btn);
+    });
+    optionsWrap.innerHTML='';
+    optionsWrap.appendChild(frag);
+  }
+  if(overlay&&sheet&&wrap){
+    const appRect=(document.querySelector('.app')||overlay).getBoundingClientRect();
+    const wrapRect=wrap.getBoundingClientRect();
+    const btnRect=wrap.querySelector('.collection-select-btn')?.getBoundingClientRect()||wrapRect;
+    const desiredLeft=Math.min(Math.max(12,wrapRect.left-appRect.left),Math.max(12,appRect.width-240));
+    const desiredTop=btnRect.bottom-appRect.top+4;
+    sheet.style.left=`${desiredLeft}px`;
+    sheet.style.top=`${desiredTop}px`;
+  }
+  overlay?.classList.add('show');
+}
+function closeCollectionPicker(e){
+  if(e&&e.target&&e.target!==e.currentTarget)return;
+  document.getElementById('collection-picker-overlay')?.classList.remove('show');
+  closeCollectionDropdown();
+}
+function renderCollection(){
+  const nation=getNationConfig(myNation);
+  const myFlag=nation?.flag||null;
+  const allUnique=Array.from(new Map(ALL_PLAYERS.filter(Boolean).map(p=>[getPlayerKey(p),p])).values());
+  const ownedUnique=Array.from(new Map(collection.filter(Boolean).map(p=>[getPlayerKey(p),p])).values());
+  const ownedKeys=new Set(ownedUnique.map(p=>getPlayerKey(p)));
+  const hitters=ownedUnique.filter(p=>!isPitcherPlayer(p));
+  const pitchers=ownedUnique.filter(p=>isPitcherPlayer(p));
+  const ownNation=myFlag?ownedUnique.filter(p=>p.nat===myFlag):[];
+  const nationFlags=[...new Set(allUnique.map(p=>p.nat).filter(Boolean))];
+  const orderedFlags=[
+    ...NATIONS.map(n=>n.flag).filter(f=>nationFlags.includes(f)),
+    ...nationFlags.filter(f=>!NATIONS.some(n=>n.flag===f)).sort(),
+  ];
+  const subEl=document.getElementById('collection-page-sub');
+  const totalEl=document.getElementById('collection-page-total');
+  const nationEl=document.getElementById('collection-nation-count');
+  const hitterEl=document.getElementById('collection-hitter-count');
+  const pitcherEl=document.getElementById('collection-pitcher-count');
+  if(subEl)subEl.textContent=`已收集 ${ownedUnique.length} / ${allUnique.length} 張球員卡`;
+  if(totalEl)totalEl.textContent=ownedUnique.length;
+  if(nationEl)nationEl.textContent=ownNation.length;
+  if(hitterEl)hitterEl.textContent=hitters.length;
+  if(pitcherEl)pitcherEl.textContent=pitchers.length;
+  const statusOptions=[
+    {id:'all',label:'全部'},{id:'owned',label:'已收藏'},{id:'unowned',label:'未收藏'},
+  ];
+  const nationOptions=[{id:'all',label:'全部國家'},...orderedFlags.map(flag=>{
+    const nat=NATIONS.find(n=>n.flag===flag);
+    return {id:flag,label:`${nat?.name||flag}`};
+  })];
+  const typeOptions=[
+    {id:'all',label:'全部'},{id:'hitters',label:'野手'},{id:'pitchers',label:'投手'},
+  ];
+  const statusLabel=document.getElementById('collection-status-label');
+  const nationLabel=document.getElementById('collection-nation-label');
+  const typeLabel=document.getElementById('collection-type-label');
+  if(statusLabel)statusLabel.textContent=statusOptions.find(o=>o.id===collectionStatusFilter)?.label||'全部';
+  if(nationLabel)nationLabel.textContent=nationOptions.find(o=>o.id===collectionNationFilter)?.label||'全部國家';
+  if(typeLabel)typeLabel.textContent=typeOptions.find(o=>o.id===collectionTypeFilter)?.label||'全部';
+  document.getElementById('collection-status-wrap')?.classList.toggle('active',collectionStatusFilter!=='all');
+  document.getElementById('collection-nation-wrap')?.classList.toggle('active',collectionNationFilter!=='all');
+  document.getElementById('collection-type-wrap')?.classList.toggle('active',collectionTypeFilter!=='all');
+  collectionDropdownOptions.status=statusOptions.map(o=>({...o,active:collectionStatusFilter===o.id,onPick:()=>setCollectionStatusFilter(o.id)}));
+  collectionDropdownOptions.nation=nationOptions.map(o=>({...o,active:collectionNationFilter===o.id,onPick:()=>setCollectionNationFilter(o.id)}));
+  collectionDropdownOptions.type=typeOptions.map(o=>({...o,active:collectionTypeFilter===o.id,onPick:()=>setCollectionTypeFilter(o.id)}));
+  let list=[...allUnique];
+  if(collectionNationFilter!=='all')list=list.filter(p=>p.nat===collectionNationFilter);
+  if(collectionStatusFilter==='owned')list=list.filter(p=>ownedKeys.has(getPlayerKey(p)));
+  if(collectionStatusFilter==='unowned')list=list.filter(p=>!ownedKeys.has(getPlayerKey(p)));
+  if(collectionTypeFilter==='hitters')list=list.filter(p=>!isPitcherPlayer(p));
+  if(collectionTypeFilter==='pitchers')list=list.filter(p=>isPitcherPlayer(p));
+  list.sort((a,b)=>
+    (ownedKeys.has(getPlayerKey(b))?1:0)-(ownedKeys.has(getPlayerKey(a))?1:0)||
+    b.ovr-a.ovr||cleanName(a.name).localeCompare(cleanName(b.name),'zh-Hant')
+  );
+  const grid=document.getElementById('collection-grid');
+  if(!grid)return;
+  if(!list.length){
+    grid.innerHTML=`<div class="collection-empty" style="grid-column:1/-1">目前這個分類還沒有球員卡<br>去招募中心或比賽頁收集更多球員吧。</div>`;
+    return;
+  }
+  const frag=document.createDocumentFragment();
+  list.forEach(p=>{
+    const rs=RAR[p.rar]||RAR.c;
+    const isOwned=ownedKeys.has(getPlayerKey(p));
+    const card=document.createElement('div');
+    card.className='collection-card'+(isOwned?'':' unowned');
+    card.style.border=`2px solid ${rs.bd}`;
+    card.innerHTML=`
+      <div class="collection-card-top" style="background:${rs.bd}"></div>
+      <div class="collection-card-body">
+        <div class="collection-card-pose">${buildPoseMiniCard(p,'lg')}</div>
+      </div>
+      <div class="collection-card-foot">
+        <div class="collection-card-name">${p.nat} ${cleanName(p.name)}</div>
+        <div class="collection-card-meta">${posStr(p)} · ${p.year||''}</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
+          <span class="collection-card-badge" style="background:${rs.bg};color:${rs.c};border:.5px solid ${rs.bd}">${p.ovr} ${rs.lbl}</span>
+          ${isOwned?`<span class="collection-card-owned">已收藏</span>`:''}
+        </div>
+      </div>`;
+    card.onclick=()=>openDetail(p.name,p.year??null);
+    frag.appendChild(card);
+  });
+  grid.innerHTML='';
+  grid.appendChild(frag);
 }
 
 /* ═══ GACHA ═══ */
@@ -1634,7 +1793,6 @@ function renderMatchSetup(){
   ].filter(v=>v!==null);
   const rawOvr=rawVals.length?Math.round(rawVals.reduce((a,v)=>a+v,0)/rawVals.length):'--';
   const{batBonus}=getCoachBonus();
-  const cnt=lineup.filter(Boolean).length;
   const n=getNationConfig(myNation);
   document.getElementById('match-mode-grid')?.classList.toggle('collapsed',!!selMatchMode);
   ['journey','dynasty','special'].forEach(mode=>{
@@ -1785,7 +1943,6 @@ function startGame(opp){
 
   // ── 關鍵修正：打線和投手分開計算 ──
   const myBatSlots=battingOrder.map(lineupIdx=>lineup[lineupIdx]?{player:lineup[lineupIdx],idx:lineupIdx}:null).filter(Boolean);
-  const myBatArr=myBatSlots.map(x=>x.player);
   const myPitArr=[...rotation.filter(Boolean),...getActiveBullpen().filter(Boolean)];
   // 打線 OVR（只算野手）
   const myBatOvr=myBatSlots.length>0
@@ -2277,7 +2434,7 @@ function calcAdvanced(p){
   const ovr=p.ovr||80;
   if(p.pit){
     // 投手：[投球力, 控球力, 變化球, 體力, 心理]
-    const stuff=s[0],ctrl=s[1],break_=s[2],stam=s[3],mental=s[4];
+    const stuff=s[0],ctrl=s[1],break_=s[2];
     const era=Math.max(0.80,Math.min(6.50,(100-ovr)*0.09+1.20-((ctrl-70)*0.03))).toFixed(2);
     const whip=Math.max(0.70,Math.min(1.80,(100-ctrl)*0.012+0.72)).toFixed(2);
     const k9=Math.max(4.0,Math.min(16.0,stuff*0.12+break_*0.04-10)).toFixed(1);
@@ -2290,7 +2447,7 @@ function calcAdvanced(p){
     return {type:'pit',era,whip,k9,bb9,fip,war,babip,rankColor,rankLabel,ovr};
   } else {
     // 野手：[打擊力, 選球眼, 速度, 守備力, 心理]
-    const bat=s[0],eye=s[1],spd=s[2],def=s[3],mental=s[4];
+    const bat=s[0],eye=s[1],spd=s[2],def=s[3];
     const avg=Math.max(.180,Math.min(.380,(bat-50)*.0022+.240)).toFixed(3).replace(/^0\./,'.');
     const obp=Math.max(.250,Math.min(.480,(parseFloat(avg.replace('.','0.'))||.270)+(eye-50)*.0025+.050)).toFixed(3).replace(/^0\./,'.');
     const iso=Math.max(.050,Math.min(.350,(bat-50)*.0038+.090)).toFixed(3).replace(/^0\./,'.');
@@ -2427,7 +2584,7 @@ function buildExcelAdvHTML(p){
   </div>`;
 }
 
-function buildAdvHTML(p,adv){
+function buildAdvHTML(p){
   return buildExcelAdvHTML(p) || `<div class="adv-excel-wrap"><div class="adv-empty">這張卡目前沒有可顯示的 Excel 原始進階數據。</div></div>`;
 }
 
@@ -2453,7 +2610,7 @@ function getPlayerPeakLabel(player){
   return '輪替深度';
 }
 
-function buildDetailSummaryHTML(player,adv){
+function buildDetailSummaryHTML(player){
   const years=Array.isArray(player.era)&&player.era.length
     ?(Math.min(...player.era)===Math.max(...player.era)
       ?String(player.era[0])
@@ -2497,9 +2654,7 @@ function getPoseSVG(p,size=44){
   const isRP=ps.includes('RP');
   const isCP=ps.includes('CP');
   const isC=ps.includes('C');
-  const isSS=ps.includes('SS')||ps.includes('2B')||ps.includes('3B')||ps.includes('1B');
   const isOF=ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF');
-  const isDH=ps.includes('DH');
   const s=size;const h=Math.round(s*0.28);const hw=Math.round(s*0.16);
   const bx=Math.round(s/2);const by=Math.round(s*0.22);
   let body='';
@@ -2598,12 +2753,12 @@ function showDetail(p,context=null){
       ?`<button class="ds-btn remove" onclick="window._removeFromTeam('${p.name}',${p.year??'null'})">從陣容移除</button>`
       :`<button class="ds-btn add" onclick="window._addFromDetail('${p.name}',${p.year??'null'})">加入陣容 ＋</button>`;
   const displayName=cardLabel(p);
-  let avBg,avTopBg,avGlow;
-  if(isH){avBg='linear-gradient(145deg,#2a1500,#1a0a00)';avTopBg='linear-gradient(90deg,#b07010,#f8d050,#d4a017)';avGlow='0 0 16px rgba(212,160,23,.5)';}
-  else if(isL){avBg='linear-gradient(145deg,#150828,#0c0518)';avTopBg='linear-gradient(90deg,#6030b8,#cc88ff,#8a50d8)';avGlow='0 0 14px rgba(138,80,216,.4)';}
-  else if(isR2){avBg='linear-gradient(145deg,#0a1428,#060c18)';avTopBg='linear-gradient(90deg,#3050a8,#7aaaff)';avGlow='0 0 8px rgba(74,106,204,.25)';}
-  else if(isRetro){avBg='linear-gradient(145deg,#faf6ee,#e8dcc8)';avTopBg=`repeating-linear-gradient(90deg,#8b4513 0,#8b4513 3px,transparent 3px,transparent 6px)`;avGlow='none';}
-  else{avBg='linear-gradient(145deg,#0d1a0d,#060f06)';avTopBg=rs.bd;avGlow='none';}
+  let avBg,avGlow;
+  if(isH){avBg='linear-gradient(145deg,#2a1500,#1a0a00)';avGlow='0 0 16px rgba(212,160,23,.5)';}
+  else if(isL){avBg='linear-gradient(145deg,#150828,#0c0518)';avGlow='0 0 14px rgba(138,80,216,.4)';}
+  else if(isR2){avBg='linear-gradient(145deg,#0a1428,#060c18)';avGlow='0 0 8px rgba(74,106,204,.25)';}
+  else if(isRetro){avBg='linear-gradient(145deg,#faf6ee,#e8dcc8)';avGlow='none';}
+  else{avBg='linear-gradient(145deg,#0d1a0d,#060f06)';avGlow='none';}
   const adv=calcAdvanced(p);
   const advHTML=buildAdvHTML(p,adv);
   const summaryHTML=buildDetailSummaryHTML(p,adv);
@@ -2876,9 +3031,7 @@ function renderScoutSlots(){
 
 function renderScoutList(){
   const sec=document.getElementById('stab-scouts');sec.innerHTML='';
-  const scoutFrag=document.createDocumentFragment();
   myScouts.forEach(scout=>{
-    const rs=RAR[scout.lv>=5?'h':scout.lv>=3?'l':'r']||RAR.r;
     const qualColor={1:'#6adb6a',2:'#7aaaff',3:'#d4a017'}[Math.min(3,scout.lv)]||'#6adb6a';
     const card=document.createElement('div');card.className='scout-card';
     card.innerHTML=`

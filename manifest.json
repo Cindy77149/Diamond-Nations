@@ -2,7 +2,7 @@
   "name": "Diamond Nations",
   "short_name": "DiamondNations",
   "description": "WBC 棒球卡牌遊戲，收集球員、組建陣容、挑戰世界各國",
-  "start_url": "./index.html?v=90",
+  "start_url": "./index.html?v=117",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f4a28",
