@@ -1,0 +1,80 @@
+/* ============================================================
+   Diamond Nations — coaches-data.js
+   教練配置：ALL_COACHES / COACH_TYPES
+   ============================================================ */
+
+window.ALL_COACHES=[
+  /* ── 打擊教練 ── */
+  {id:'bat1',type:'bat',name:'Tony Gwynn Jr.',en:'Tony Gwynn Jr.',nat:'🇺🇸',lv:1,maxLv:5,ovr:78,bonus:'+4% 打擊率',rarity:'r',av:'🏏',
+   desc:'棒球名人堂打擊王 Tony Gwynn 之子，現任MLB打擊教練，傳承父親精準打擊哲學。',
+   story:'父親 Tony Gwynn 是史上最精準打者，打擊率 .394 是近代最高。Tony Jr. 繼承衣缽，致力將接觸打擊技術傳授給下一代。',
+   skills:[{i:'🎯',n:'精準哲學',d:'三振率-15%'},{i:'👨‍👦',n:'名門之後',d:'打擊率+4%'},{i:'📚',n:'打擊理論',d:'選球+8%'}],obtain:'任務'},
+  {id:'bat2',type:'bat',name:'Chili Davis',en:'Chili Davis',nat:'🇺🇸',lv:2,maxLv:5,ovr:85,bonus:'+6% 打擊 OVR',rarity:'l',av:'🌶️',
+   desc:'MLB 生涯 350 支全壘打，曾任紅襪、洋基、大都會打擊教練，以「情境打擊」聞名。',
+   story:'Chili Davis 以長達 19 年的職業生涯積累豐富打擊經驗，執教期間培育多位明星打者，特別擅長讓中段打者提升長打率。',
+   skills:[{i:'🌶️',n:'辣椒打法',d:'長打率+12%'},{i:'📊',n:'情境打擊',d:'得點圈打擊+15%'},{i:'🏆',n:'350轟',d:'HR+6%'}],obtain:'抽卡'},
+  {id:'bat3',type:'bat',name:'Edgar Martínez',en:'Edgar Martinez',nat:'🇺🇸',lv:4,maxLv:5,ovr:95,bonus:'+10% 打擊 OVR',rarity:'h',av:'👑',
+   desc:'名人堂指定打擊王，打擊率 .312，七次銀棒獎。現任職業打擊顧問，是 DH 打擊藝術最高權威。',
+   story:'Edgar Martínez 將「指定打擊」從替補位置提升為藝術。名人堂入選後持續擔任打擊顧問，任何打擊問題都難不倒他。',
+   skills:[{i:'👑',n:'DH之王',d:'打擊率+10%'},{i:'🎨',n:'打擊藝術',d:'OBP+12%'},{i:'🏅',n:'名人堂',d:'關鍵打席+18%'}],obtain:'抽卡'},
+  /* ── 投手教練 ── */
+  {id:'pit1',type:'pit',name:'Rick Peterson',en:'Rick Peterson',nat:'🇺🇸',lv:1,maxLv:5,ovr:76,bonus:'-4% 對手安打率',rarity:'r',av:'🎯',
+   desc:'MLB 傳奇投手教練，曾任運動家、大都會投手教練，以「五局定勝負」理念聞名，培育 Barry Zito、Tim Hudson 等多位 Cy Young 得主。',
+   story:'Rick Peterson 在奧克蘭運動家的 Moneyball 時代擔任投手教練，與 Billy Beane 共同打造低薪高效投手群，他的分析式執教方法革命性地改變了現代投手訓練。',
+   skills:[{i:'🎯',n:'五局理論',d:'ERA-8%'},{i:'📊',n:'數據執教',d:'首五局投球效率+15%'},{i:'🏟️',n:'運動家精神',d:'低薪高效+10%'}],obtain:'任務'},
+  {id:'pit2',type:'pit',name:'Dave Duncan',en:'Dave Duncan',nat:'🇺🇸',lv:3,maxLv:5,ovr:90,bonus:'-8% 對手安打率',rarity:'l',av:'⚾',
+   desc:'MLB 史上最偉大投手教練之一，跟隨 Tony La Russa 執教 28 年，將 Dennis Eckersley、Chris Carpenter 等投手帶到生涯巔峰。',
+   story:'Dave Duncan 的招牌是「讓投手找到自己最好的球路」。他執教的紅雀、運動家投手群ERA屢次全聯盟最低，影響了整個現代棒球的投手訓練哲學。',
+   skills:[{i:'⚾',n:'大師執教',d:'ERA-10%'},{i:'🔑',n:'找到最佳球路',d:'三振率+15%'},{i:'💎',n:'28年傳奇',d:'先發完投率+20%'}],obtain:'抽卡'},
+  {id:'pit3',type:'pit',name:'Tom House',en:'Tom House',nat:'🇺🇸',lv:4,maxLv:5,ovr:94,bonus:'-12% 對手安打率',rarity:'h',av:'🔬',
+   desc:'投手科學之父，前 MLB 投手，後成為生物力學投球專家，指導過 Nolan Ryan、Randy Johnson、Greg Maddux 等多位名人堂投手。',
+   story:'Tom House 是第一位將運動科學系統性應用於棒球投球的教練。他創辦 NPA 學院，以生物力學分析投球，讓 Nolan Ryan 在 40 歲後仍維持頂尖水準。',
+   skills:[{i:'🔬',n:'科學投球',d:'投手體力消耗-30%'},{i:'🧬',n:'生物力學',d:'受傷機率-20%'},{i:'🏆',n:'名人堂級',d:'ERA全面最低'}],obtain:'抽卡'},
+  /* ── 守備教練 ── */
+  {id:'def1',type:'def',name:'Ron Washington',en:'Ron Washington',nat:'🇺🇸',lv:1,maxLv:5,ovr:77,bonus:'+4% 守備能力',rarity:'r',av:'🛡️',
+   desc:'前游擊手，曾任遊騎兵總教練，以嚴格守備訓練聞名，帶隊連兩年打進世界大賽，現任天使隊守備教練。',
+   story:'Ron Washington 以「That\'s the way baseball go」幽默語錄聞名，但守備訓練一絲不苟。他培育的游擊手防守體系在 MLB 是教科書等級。',
+   skills:[{i:'🛡️',n:'鐵壁守備',d:'失誤率-20%'},{i:'⭐',n:'世界大賽',d:'守備穩定+15%'},{i:'🎓',n:'守備教科書',d:'內野協防+12%'}],obtain:'任務'},
+  {id:'def2',type:'def',name:'Dave Roberts',en:'Dave Roberts',nat:'🇺🇸',lv:2,maxLv:5,ovr:84,bonus:'+7% 守備能力',rarity:'l',av:'💙',
+   desc:'道奇隊總教練，前速度型外野手，最著名的是 2004 年 ALCS 對紅襪的盜壘改寫歷史。執教強調守備位置和跑壘積極性。',
+   story:'Dave Roberts 那一次盜壘被稱為「史上最重要的一個盜壘」。他將速度和積極跑壘的理念帶入執教，道奇隊在他帶領下守備和機動性達到聯盟最高水準。',
+   skills:[{i:'💙',n:'道奇執教',d:'守備位置優化+15%'},{i:'🏃',n:'積極跑壘',d:'盜壘成功率+20%'},{i:'⭐',n:'歷史盜壘',d:'機動性全面+10%'}],obtain:'抽卡'},
+  {id:'def3',type:'def',name:'Gold Glove 巡迴教練',en:'Gold Glove Circuit',nat:'🌍',lv:4,maxLv:5,ovr:92,bonus:'+12% 守備能力',rarity:'h',av:'🥇',
+   desc:'集合歷屆金手套得主精華打造的精英守備訓練計畫，結合 Ozzie Smith、Brooks Robinson、Ken Griffey Jr. 的守備技巧。',
+   story:'這個計畫由 MLB 官方認可，匯集史上最偉大守備者的技術精華，是全球頂尖守備訓練的最高殿堂。',
+   skills:[{i:'🥇',n:'金手套傳承',d:'守備率全面頂點'},{i:'🌍',n:'精英訓練',d:'各位置守備+15%'},{i:'✨',n:'傳奇技巧',d:'守備失誤完全消除'}],obtain:'抽卡'},
+  /* ── 體能訓練師 ── */
+  {id:'fit1',type:'fit',name:'Tim Lentych',en:'Tim Lentych',nat:'🇺🇸',lv:1,maxLv:5,ovr:74,bonus:'-15% 疲勞消耗',rarity:'r',av:'💪',
+   desc:'前 MLB 球隊體能訓練師，專精棒球專項體能訓練，強調預防傷害和賽季體力管理。',
+   story:'Tim Lentych 在大聯盟球隊服務超過 15 年，他的體能訓練系統讓球員在 162 場賽季後仍維持競技水準，大幅降低疲勞傷病率。',
+   skills:[{i:'💪',n:'體能基礎',d:'疲勞消耗-15%'},{i:'🏥',n:'傷害預防',d:'受傷機率-12%'},{i:'📅',n:'賽季管理',d:'後段體力維持+10%'}],obtain:'任務'},
+  {id:'fit2',type:'fit',name:'Andrew Hervas',en:'Andrew Hervas',nat:'🇺🇸',lv:2,maxLv:5,ovr:83,bonus:'-22% 疲勞消耗',rarity:'l',av:'🏋️',
+   desc:'現任 MLB 球隊首席體能訓練師，整合功能性訓練和生物力學，是大聯盟球員體能管理的頂尖專家。',
+   story:'Andrew Hervas 結合最新運動科學，制定個人化體能訓練計劃。他的球員能在整個球季保持最佳狀態，使球隊在關鍵比賽時仍擁有充沛戰力。',
+   skills:[{i:'🏋️',n:'功能訓練',d:'疲勞消耗-22%'},{i:'🔬',n:'科學化',d:'體力恢復速度+20%'},{i:'📊',n:'數據管理',d:'賽季後段表現不衰'}],obtain:'抽卡'},
+  {id:'fit3',type:'fit',name:'Mackie Shilstone',en:'Mackie Shilstone',nat:'🇺🇸',lv:4,maxLv:5,ovr:93,bonus:'-30% 疲勞消耗',rarity:'h',av:'⚡',
+   desc:'傳奇體能顧問，服務過 NFL、NBA、MLB 超過 40 年，為 Riddick Bowe、Bernard Hopkins 等頂尖運動員設計體能計畫。已延伸服務至棒球領域。',
+   story:'Mackie Shilstone 被視為北美最偉大的體能顧問，他的訓練哲學「體能是技術的基礎」影響了整個運動訓練界。在他服務的球員中，40 歲後仍維持頂尖表現的比例遠超業界平均。',
+   skills:[{i:'⚡',n:'傳奇體能',d:'疲勞消耗-30%'},{i:'🏆',n:'40年資歷',d:'所有體能指標全面提升'},{i:'💎',n:'頂尖顧問',d:'體力永不見底'}],obtain:'抽卡'},
+  /* ── 心理教練 ── */
+  {id:'psy1',type:'psy',name:'Harvey Dorfman',en:'Harvey Dorfman',nat:'🇺🇸',lv:1,maxLv:5,ovr:80,bonus:'+6% 關鍵時刻能力',rarity:'r',av:'🧠',
+   desc:'MLB 史上最影響力的心理教練，著作《The Mental Game of Baseball》是棒球心理學聖經，服務 A\'s、Marlins 等多隊。',
+   story:'Harvey Dorfman（1935-2011）以獨特的對話式輔導方式，幫助無數大聯盟球員克服心理障礙。他的名言「你無法控制結果，只能控制過程」至今仍是棒球界最廣引用的心理格言。',
+   skills:[{i:'🧠',n:'心理聖經',d:'壓力免疫+15%'},{i:'📖',n:'心理大作',d:'失誤後恢復+20%'},{i:'💬',n:'對話輔導',d:'關鍵打席心理+6%'}],obtain:'任務'},
+  {id:'psy2',type:'psy',name:'Ken Ravizza',en:'Ken Ravizza',nat:'🇺🇸',lv:3,maxLv:5,ovr:88,bonus:'+10% 關鍵時刻能力',rarity:'l',av:'🎯',
+   desc:'美國頂尖運動心理學教授，加州州立富勒頓大學教授，服務 Cubs、Angels、Cardinals 等多支 MLB 球隊，2016 年小熊奪冠功臣之一。',
+   story:'Ken Ravizza 專注於幫助球員「一次只處理一個打席」，他的方法幫助 2016 年芝加哥小熊打破了 108 年的冠軍荒。他的「垃圾桶儀式」——把壞打席丟進腦中的垃圾桶——被全聯盟廣泛採用。',
+   skills:[{i:'🎯',n:'一次一打席',d:'連續失誤防止+20%'},{i:'🏆',n:'2016小熊',d:'108年荒解除'},{i:'🗑️',n:'垃圾桶儀式',d:'心理重置能力+18%'}],obtain:'抽卡'},
+  {id:'psy3',type:'psy',name:'Bob Tewksbury',en:'Bob Tewksbury',nat:'🇺🇸',lv:4,maxLv:5,ovr:95,bonus:'+15% 關鍵時刻能力',rarity:'h',av:'🌟',
+   desc:'前 MLB 投手，紅雀隊心理教練，哈佛大學心理諮商碩士。現任職 MLB 多隊心理顧問，著有《Ninety Percent Mental》。',
+   story:'Bob Tewksbury 將自身的職業球員經歷與正統心理學訓練完美結合。他幫助過大衛·歐提茲在關鍵比賽時的心理調適，也協助多位球員克服比賽焦慮。他的書名直接引用了棒球界最知名的說法：「棒球 90% 靠心理。」',
+   skills:[{i:'🌟',n:'哈佛心理師',d:'關鍵時刻+15%'},{i:'📚',n:'90%心理',d:'逆境爆發+20%'},{i:'💡',n:'前球員見解',d:'比賽焦慮完全消除'}],obtain:'抽卡'},
+];
+
+window.COACH_TYPES=[
+  {id:'bat',label:'打擊教練',icon:'🏏',color:'#d4a017',desc:'提升打線整體 OVR'},
+  {id:'pit',label:'投手教練',icon:'⚾',color:'#5a7aee',desc:'降低對手打擊率'},
+  {id:'def',label:'守備教練',icon:'🛡️',color:'#4adb6a',desc:'提升守備能力'},
+  {id:'fit',label:'體能訓練師',icon:'💪',color:'#e8804a',desc:'減少疲勞消耗'},
+  {id:'psy',label:'心理教練',icon:'🧠',color:'#cc88ff',desc:'關鍵時刻能力提升'},
+];

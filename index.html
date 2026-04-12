@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Diamond Nations — WBC 棒球卡牌遊戲，收集球員、組建陣容、挑戰世界各國">
+<meta name="theme-color" content="#0f4a28">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diamond Nations">
+<link rel="manifest" href="manifest.json?v=88">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=88">
+<title>Diamond Nations</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=88">
+</head>
+<body>
+<div class="device-stage">
+<div class="stage-glow glow-left"></div>
+<div class="stage-glow glow-right"></div>
+<div class="phone-device">
+<div class="phone-frame">
+  <div class="phone-speaker"></div>
+  <div class="phone-notch">
+    <span class="phone-camera"></span>
+    <span class="phone-sensor"></span>
+  </div>
+  <div class="app">
+
+<!-- ── Step 1: 選國家 ── -->
+<div class="nation-screen" id="nation-screen">
+  <div class="ns-logo">⚾ DIAMOND NATIONS</div>
+  <div class="ns-sub">選擇你代表的國家<br>開始你的 WBC 之旅</div>
+  <div class="ns-step">STEP 1 · 選擇國家</div>
+  <div class="nation-grid" id="nation-grid"></div>
+  <button class="ns-confirm-btn" id="ns-confirm-btn" disabled onclick="goLegendStep()">下一步：選擇傳奇球員 →</button>
+</div>
+
+<!-- ── Step 2: 傳奇三選一 ── -->
+<div class="legend-screen" id="legend-screen">
+  <div class="ls-title">📸 復古傳奇特別款</div>
+  <div class="ls-sub" id="legend-screen-sub">選擇一位本國傳奇球員加入起始陣容<br>他將成為你球隊的精神支柱</div>
+  <div class="legend-cards" id="legend-cards"></div>
+  <button class="ls-confirm-btn" id="ls-confirm-btn" disabled onclick="goLineupStep()">下一步：選擇上場 9 人 →</button>
+</div>
+
+<!-- ── Step 3: 選 9 人上場 ── -->
+<div class="lineup-screen" id="lineup-screen">
+  <div class="ls-header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div class="lsh-title">預覽 WBC 名單</div><div class="lsh-sub">確認你的 30 人初始名單</div></div>
+      <div><div class="lsh-count"><span id="lineup-count">0</span>人</div></div>
+    </div>
+  </div>
+  <div class="ls-pool" id="ls-pool"></div>
+  <div class="ls-footer">
+    <div class="ls-footer-info" id="ls-footer-info">WBC 初始名單 0 / 30 人</div>
+    <button class="ls-start-btn" id="ls-start-btn" disabled onclick="finishSetup()">確認陣容・開始遊戲 ⚾</button>
+  </div>
+</div>
+
+<!-- ── 開包動畫 ── -->
+<div class="unpack-overlay" id="unpack-overlay">
+  <div class="unpack-title" id="up-title">🎁 你的起始陣容</div>
+  <div class="unpack-sub" id="up-sub">初始卡牌</div>
+  <div class="unpack-cards" id="up-cards"></div>
+  <div class="unpack-actions">
+    <button class="unpack-btn ghost" id="up-skip-btn" onclick="skipUnpackAnim()">跳過動畫</button>
+    <button class="unpack-btn ghost" id="up-replay-btn" onclick="replayUnpackAnim()" disabled>重播動畫</button>
+    <button class="unpack-btn" id="up-enter-btn" onclick="enterGame()">進入遊戲 →</button>
+  </div>
+</div>
+
+<!-- ── 主畫面 ── -->
+<div class="screen" id="sc-home">
+  <div class="home-header">
+    <div class="home-header-left">
+      <span id="home-flag" class="home-flag">⚾</span>
+      <div>
+        <div class="home-title">Diamond Nations</div>
+        <div class="home-sub" id="home-nation-sub">選擇你的國家</div>
+      </div>
+    </div>
+    <div class="home-header-actions">
+      <div class="home-gem-chip">💎 <span id="gem-home">3000</span></div>
+      <button class="home-settings-btn" onclick="goScreen('settings')" aria-label="設定">⚙️</button>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="home-banner-wrap"><div class="banner-slides" id="banner-slides"></div><div class="bdots" id="bdots"></div></div>
+    <div class="home-pad">
+      <!-- 狀態卡列 -->
+      <div class="home-cards-row">
+        <div class="home-card" onclick="goScreen('team')">
+          <div class="hc-label">我的球隊</div>
+          <div class="hc-ovr" id="hc-ovr">--</div>
+          <div class="hc-sub" id="hc-lineup-sub">尚未配置陣容</div>
+          <div class="hc-row">
+            <div class="hc-stat"><div class="hc-stat-val" id="hc-bat-cnt">0/16</div><div class="hc-stat-lbl">野手</div></div>
+            <div class="hc-stat"><div class="hc-stat-val" id="hc-rot-cnt">0/5</div><div class="hc-stat-lbl">先發</div></div>
+            <div class="hc-stat"><div class="hc-stat-val" id="hc-bull-cnt">0/9</div><div class="hc-stat-lbl">牛棚</div></div>
+          </div>
+        </div>
+        <div class="home-card" onclick="goScreen('gacha')">
+          <div class="hc-label">球員收藏</div>
+          <div class="hc-ovr" id="hc-col-count" style="color:#d4a017">0</div>
+          <div class="hc-sub">/ 93 位球員</div>
+          <div class="hc-progress-wrap">
+            <div class="hc-progress-bar"><div class="hc-progress-fill" id="hc-col-fill" style="width:0%"></div></div>
+            <div class="hc-progress-pct" id="hc-col-pct">0%</div>
+          </div>
+          <div class="hc-stat-lbl" style="margin-top:6px;color:var(--color-text-tertiary)">點擊前往招募 →</div>
+        </div>
+      </div>
+      <div class="sec-hd"><span>每日任務</span><span class="sec-more">全部 ›</span></div>
+      <div id="daily-list"></div>
+      <div class="sec-hd" style="margin-top:16px"><span>最近活動</span></div>
+      <div id="act-list"></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goScreen('home')"><div class="nav-icon">🏠</div><div class="nav-lbl">主頁</div></div>
+    <div class="nav-item" onclick="goScreen('gacha')"><div class="nav-icon">🔭</div><div class="nav-lbl">招募</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="goScreen('team')"><div class="nav-icon">⚾</div><div class="nav-lbl">組隊</div></div>
+    <div class="nav-item" onclick="goScreen('match')"><div class="nav-icon">🎮</div><div class="nav-lbl">比賽</div></div>
+    <div class="nav-item" onclick="goScreen('coach')"><div class="nav-icon">🧑‍🏫</div><div class="nav-lbl">教練</div></div>
+  </div>
+</div>
+
+<!-- ── 抽卡 ── -->
+<div class="screen" id="sc-gacha">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">🔭 招募中心</div></div>
+    <div class="tw-chip">💎 <span class="tw-val" id="gem-gacha">3000</span></div>
+  </div>
+  <div class="scroll">
+    <div class="recruit-page show" id="recruit-page-scout">
+      <div class="scout-hero">
+        <div class="scout-hero-icon">🔭</div>
+        <div class="scout-hero-inf">
+          <div class="scout-hero-title">球探搜尋</div>
+          <div class="scout-hero-sub">免費搜尋要等待時間，付鑽石可立即取得回報。</div>
+        </div>
+      </div>
+      <div class="scout-slots-row" id="scout-slots-row"></div>
+      <div class="scout-tabs">
+        <div class="scout-tab active" onclick="switchScoutTab(this,'stab-scouts')">🕵️ 我的球探</div>
+        <div class="scout-tab" onclick="switchScoutTab(this,'stab-candidates')">⭐ 搜尋結果</div>
+      </div>
+      <div class="scout-scroll-sections">
+        <div id="stab-scouts" class="scout-section"></div>
+        <div id="stab-candidates" class="scout-section" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 抽卡選擇 bottom sheet -->
+<div class="pull-choice-overlay" id="pull-choice-overlay" onclick="closePullChoiceBg(event)">
+  <div class="pull-choice-box">
+    <div class="pcb-header" id="pcb-header"></div>
+    <div class="pcb-body" id="pcb-body"></div>
+    <div class="pcb-btns">
+      <button class="pcb-btn single" onclick="closePullChoice();doPull(1)">單抽　💎 300</button>
+      <button class="pcb-btn ten" onclick="closePullChoice();doPull(10)">✨ 十連抽　💎 2,700</button>
+      <button class="pcb-btn cancel" onclick="closePullChoice()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 抽卡動畫 overlay -->
+<div class="pull-anim-overlay" id="pull-anim-overlay">
+  <div class="pull-single-stage" id="pull-single-stage"></div>
+  <div class="pull-ten-stage" id="pull-ten-stage" style="display:none"></div>
+</div>
+
+<!-- ── 組隊 ── -->
+<div class="screen" id="sc-team">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title tb-title-team">⚾ 組隊</div></div>
+    <div style="font-family:'Bebas Neue',cursive;font-size:16px;color:white">OVR <span id="t-ovr">--</span></div>
+  </div>
+  <div class="team-header">
+    <div class="team-header-stats">
+      <div class="th-stat"><div class="th-val" id="t-bat">--</div><div class="th-lbl">打線</div></div>
+      <div class="th-stat"><div class="th-val" id="t-pit">--</div><div class="th-lbl">投手</div></div>
+      <div class="th-stat"><div class="th-val" id="t-def">--</div><div class="th-lbl">守備</div></div>
+    </div>
+    <div class="team-header-summary">
+      <div class="ths-val"><span id="t-bat-cnt">0</span> / <span id="t-pit-cnt">0</span></div>
+      <div class="ths-lbl">打線 / 投手</div>
+    </div>
+  </div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="switchTeamTab('bat')">🏏 打線</div>
+    <div class="sub-tab" onclick="switchTeamTab('pitch')">⚾ 投手</div>
+    <div class="sub-tab" onclick="switchTeamTab('def')">🧤 守備</div>
+    <div class="sub-tab" onclick="switchTeamTab('pick')">所有球員</div>
+  </div>
+  <div class="scroll">
+    <div class="sub-page show" id="sp-bat" style="padding:10px 14px">
+      <div id="sp-bat-lineup"></div>
+      <div class="team-section-bar">
+        <div class="team-subhead" style="margin:0">候補</div>
+        <div class="team-section-stepper">
+          <button type="button" class="team-step-btn" onclick="adjustReserveConfig(-1)">−</button>
+          <div class="team-step-val" id="bench-slots-val-team">7</div>
+          <button type="button" class="team-step-btn" onclick="adjustReserveConfig(1)">＋</button>
+        </div>
+      </div>
+      <div id="sp-bat-bench"></div>
+    </div>
+    <div class="sub-page" id="sp-pitch" style="padding:10px 14px">
+      <div class="pitcher-sub-tabs">
+        <button class="pitcher-sub-tab active" data-sub="rot" type="button" onclick="switchPitcherTab('rot')">先發</button>
+        <button class="pitcher-sub-tab" data-sub="bull" type="button" onclick="switchPitcherTab('bull')">牛棚</button>
+      </div>
+      <div class="pitcher-sub-page show" id="sp-pitch-rot"></div>
+      <div class="pitcher-sub-page" id="sp-pitch-bull">
+        <div class="team-section-bar" style="margin-bottom:8px">
+          <div class="team-subhead" style="margin:0">牛棚</div>
+          <div class="team-section-stepper">
+            <button type="button" class="team-step-btn" onclick="adjustBullpenConfig(-1)">−</button>
+            <div class="team-step-val" id="bullpen-slots-val-team">9</div>
+            <button type="button" class="team-step-btn" onclick="adjustBullpenConfig(1)">＋</button>
+          </div>
+        </div>
+        <div id="sp-pitch-bull-list"></div>
+      </div>
+    </div>
+    <div class="sub-page" id="sp-def" style="padding:10px 14px"></div>
+    <div class="sub-page" id="sp-pick" style="padding:10px 14px">
+      <div class="pick-banner" id="pick-banner"><span id="pick-hint"></span><span class="cancel-pick" onclick="cancelPick()">取消</span></div>
+      <div class="pick-toolbar">
+        <div class="team-view-wrap">
+          <button class="team-view-btn" id="team-view-btn" onclick="toggleTeamViewMenu()">排列</button>
+          <div class="team-view-menu" id="team-view-menu">
+            <div class="team-view-group">
+              <div class="team-view-group-title">顯示格式</div>
+              <div class="team-view-chip-row">
+                <button class="team-view-opt active" data-mode="standard" onclick="setTeamViewMode('standard')">標準</button>
+                <button class="team-view-opt" data-mode="compact" onclick="setTeamViewMode('compact')">緊湊</button>
+              </div>
+            </div>
+            <div class="team-view-group">
+              <div class="team-view-group-title">球員排序</div>
+              <div class="team-view-chip-row">
+                <button class="team-sort-opt active" data-sort="ovr" onclick="setTeamSortMode('ovr')">OVR</button>
+                <button class="team-sort-opt" data-sort="rarity" onclick="setTeamSortMode('rarity')">等級</button>
+                <button class="team-sort-opt" data-sort="acquired" onclick="setTeamSortMode('acquired')">取得時間</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-row" id="filter-row"></div>
+      <div id="player-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 比賽 ── -->
+<div class="screen" id="sc-match">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">🎮 比賽</div></div>
+  </div>
+  <div class="scroll">
+    <div class="match-setup">
+      <div class="match-mode-grid match-mode-grid-main" id="match-mode-grid">
+        <button class="match-mode-card match-mode-block" id="match-mode-journey" type="button" onclick="setMatchMode('journey')">
+          <div class="mmc-k">主線模式</div>
+          <div class="mmc-t">經典賽征途</div>
+          <div class="mmc-d">沿著歷代 WBC 年代一路突破。</div>
+        </button>
+        <button class="match-mode-card match-mode-block" id="match-mode-dynasty" type="button" onclick="setMatchMode('dynasty')">
+          <div class="mmc-k">高難模式</div>
+          <div class="mmc-t">王朝挑戰</div>
+          <div class="mmc-d">挑戰歷代冠軍完全體與巔峰世代。</div>
+        </button>
+        <button class="match-mode-card match-mode-block" id="match-mode-special" type="button" onclick="setMatchMode('special')">
+          <div class="mmc-k">活動模式</div>
+          <div class="mmc-t">特別賽</div>
+          <div class="mmc-d">限定規則與每日任務賽事。</div>
+        </button>
+      </div>
+      <div class="match-detail" id="match-detail"></div>
+    </div>
+  </div>
+  <div class="game-screen" id="game-screen">
+    <div class="gs-header"><div class="gs-title" id="gs-title">比賽進行中</div><div class="gs-close" onclick="closeGame()">✕ 離開</div></div>
+    <div class="gs-score">
+      <div class="gs-team">
+        <div class="gs-flag" id="gs-my-flag">🇹🇼</div>
+        <div class="gs-tnm">我的球隊</div>
+        <div class="gs-player-now" id="gs-my-now">—</div>
+      </div>
+      <div class="gs-center">
+        <div class="gs-nums"><div class="gs-num" id="gs-s1">0</div><div class="gs-sep">:</div><div class="gs-num" id="gs-s2">0</div></div>
+        <div class="gs-inn" id="gs-inn">準備中</div>
+      </div>
+      <div class="gs-team">
+        <div class="gs-flag" id="gs-opp-flag">🇯🇵</div>
+        <div class="gs-tnm" id="gs-opp-nm">對手</div>
+        <div class="gs-player-now" id="gs-opp-now">—</div>
+      </div>
+    </div>
+    <!-- 狀態列：壘包 + 出局 + 投打 -->
+    <div class="gs-status">
+      <div class="gs-bases-wrap">
+        <div id="base2" class="gs-base" style="top:0;left:50%;margin-left:-8px;width:16px;height:16px;background:#1a4a2a;border:1.5px solid #2a6a3a"></div>
+        <div id="base3" class="gs-base" style="bottom:2px;left:2px;width:16px;height:16px;background:#1a4a2a;border:1.5px solid #2a6a3a"></div>
+        <div id="base1" class="gs-base" style="bottom:2px;right:2px;width:16px;height:16px;background:#1a4a2a;border:1.5px solid #2a6a3a"></div>
+      </div>
+      <div class="gs-outs-wrap">
+        <div style="font-size:7px;color:#4adb6a;font-weight:700;letter-spacing:.05em">OUT</div>
+        <div id="out1" class="gs-out-dot" style="background:#1a4a2a;border:1.5px solid #2a6a3a"></div>
+        <div id="out2" class="gs-out-dot" style="background:#1a4a2a;border:1.5px solid #2a6a3a"></div>
+        <div id="out3" class="gs-out-dot" style="background:#1a4a2a;border:1.5px solid #2a6a3a"></div>
+      </div>
+      <div class="gs-vs-col">
+        <div class="gs-vs-row">
+          <span class="gs-vs-lbl" style="color:#e05060">投手</span>
+          <span class="gs-vs-name" id="gs-pitcher-name">—</span>
+          <div class="gs-stamina-wrap">
+            <div style="font-size:7px;color:#3a7a3a;text-align:right;margin-bottom:2px" id="gs-stamina-pct">100%</div>
+            <div class="gs-stamina-track"><div id="gs-stamina-bar" class="gs-stamina-fill" style="width:100%;background:#4adb6a"></div></div>
+          </div>
+        </div>
+        <div class="gs-vs-row">
+          <span class="gs-vs-lbl" style="color:#d4a017">打者</span>
+          <span class="gs-vs-name" id="gs-batter-name">—</span>
+          <span style="font-size:9px;color:rgba(255,255,255,.4);flex-shrink:0" id="gs-batter-stat">—</span>
+        </div>
+      </div>
+    </div>
+    <!-- 公式列 -->
+    <div class="gs-formula-wrap">
+      <div class="gs-formula" id="gs-formula"></div>
+    </div>
+    <!-- 播報 log -->
+    <div class="gs-mid">
+      <div class="gs-log" id="gs-log"></div>
+    </div>
+    <div class="gs-btns">
+      <button class="gb" onclick="closeGame()">放棄</button>
+      <button class="gb primary" onclick="simNext()" id="gb-next">▶ 下一球</button>
+      <button class="gb" onclick="simAuto()" id="gb-auto">⚡ 快速</button>
+    </div>
+    <!-- 比賽結果 -->
+    <div class="game-result" id="game-result">
+      <div class="gr-banner" id="gr-banner">勝利！</div>
+      <div class="gr-score" id="gr-score">5:3</div>
+      <div class="gr-stats" id="gr-stats"></div>
+      <!-- 打線統計 -->
+      <div id="gr-box" style="background:rgba(255,255,255,.04);border:.5px solid #1a4a2a;border-radius:9px;padding:10px 12px;width:100%;max-width:320px;overflow-x:auto;margin-top:-4px"></div>
+      <div class="gr-btns"><button class="gr-btn" onclick="closeGame()">返回</button><button class="gr-btn primary" onclick="resetGame()">再戰</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 教練 ── -->
+<div class="screen" id="sc-coach">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">🧑‍🏫 教練團</div></div>
+  </div>
+  <div class="coach-header">
+    <div class="ch-title">教練加成效果</div>
+    <div class="ch-sub">裝備教練後自動套用到比賽</div>
+    <div class="ch-bonus-row" id="coach-bonus-row"></div>
+  </div>
+  <div class="coach-tabs" id="coach-tabs"></div>
+  <div class="scroll">
+    <div class="coach-list" id="coach-list"></div>
+    <div class="coach-obtain">
+      <div class="co-title">獲得教練的方式</div>
+      <div class="co-ways">
+        <div class="co-way" onclick="goScreen('gacha')"><div class="co-way-i">🎴</div><div class="co-way-n">抽卡</div><div class="co-way-d">教練卡池</div></div>
+        <div class="co-way"><div class="co-way-i">🪙</div><div class="co-way-n">金幣購買</div><div class="co-way-d">商店兌換</div></div>
+        <div class="co-way"><div class="co-way-i">📋</div><div class="co-way-n">任務解鎖</div><div class="co-way-d">完成挑戰</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="sc-scout"></div>
+
+<!-- 派遣 overlay -->
+<div class="dispatch-overlay" id="dispatch-overlay">
+  <div class="dispatch-box">
+    <div class="db-header">
+      <div style="font-size:22px" id="db-scout-icon">🕵️</div>
+      <div class="db-title" id="db-scout-name">選擇派遣地區</div>
+      <div class="db-close" onclick="closeDispatch()">✕</div>
+    </div>
+    <div style="padding:10px 14px 6px;font-size:10px;color:var(--color-text-tertiary)">選擇搜尋地區（影響出現的球員國籍）</div>
+    <div class="region-grid" id="region-grid"></div>
+    <div style="padding:4px 14px 10px">
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:9px;color:var(--color-text-tertiary);line-height:1.6" id="dispatch-info">選擇地區後顯示費用與時間</div>
+    </div>
+    <div class="db-confirm">
+      <button class="db-btn" onclick="closeDispatch()">取消</button>
+      <button class="db-btn" id="dispatch-free-btn" onclick="confirmDispatch('free')">免費搜尋</button>
+      <button class="db-btn primary" id="dispatch-confirm-btn" onclick="confirmDispatch('fast')">快速完成 💎</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 設定 ── -->
+<div class="screen" id="sc-settings">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">⚙️ 設定</div></div>
+  </div>
+  <div class="scroll" style="padding:14px 16px">
+    <div class="sec-hd">帳號設定</div>
+    <div style="background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:.5px solid var(--color-border-tertiary)">
+        <span style="font-size:24px" id="settings-flag">⚾</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--color-text-primary)" id="settings-nation-name">未選擇</div><div style="font-size:10px;color:var(--color-text-tertiary);margin-top:2px">當前代表國家</div></div>
+        <button onclick="showChangeNation()" style="padding:7px 14px;border-radius:7px;border:.5px solid #8a3030;background:rgba(200,50,50,.08);color:#f06070;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">重新開始</button>
+      </div>
+      <div style="padding:12px 16px;font-size:10px;color:var(--color-text-tertiary);line-height:1.6">⚠️ 重新開始遊戲會清空目前收藏與陣容，教練和寶石不受影響。</div>
+    </div>
+    <div class="sec-hd">App 安裝</div>
+    <div class="install-card">
+      <div class="install-card-row">
+        <div>
+          <div class="install-card-title">安裝到主畫面</div>
+          <div class="install-card-sub" id="install-app-sub">可像 app 一樣從手機桌面直接開啟。</div>
+        </div>
+        <button class="install-app-btn" id="install-app-btn" type="button" onclick="promptInstallApp()" disabled>準備中</button>
+      </div>
+      <div class="install-card-note" id="install-app-note">支援裝置會顯示安裝按鈕；iPhone 請使用 Safari 的分享選單加入主畫面。</div>
+    </div>
+    <div class="sec-hd">組隊設定</div>
+    <div style="background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--color-text-primary)">守位錯位懲罰</div>
+          <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:3px;line-height:1.5" id="position-penalty-sub">關閉時依卡片原始 OVR 計算；開啟後站錯守位會下降能力。</div>
+        </div>
+        <button id="position-penalty-btn" type="button" onclick="togglePositionPenalty()" style="padding:8px 14px;border-radius:999px;border:.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">關閉</button>
+      </div>
+    </div>
+    <div style="background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="padding:14px 16px;border-bottom:.5px solid var(--color-border-tertiary)">
+        <div style="font-size:13px;font-weight:700;color:var(--color-text-primary)">30 人名額配置</div>
+        <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:3px;line-height:1.5">預設為候補野手 7 / 牛棚 9。你可以自行調整，但兩者總和固定為 16。</div>
+      </div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div><div style="font-size:12px;font-weight:700;color:var(--color-text-primary)">候補野手</div><div style="font-size:10px;color:var(--color-text-tertiary)">先發 9 人之外的野手名額</div></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button type="button" onclick="adjustReserveConfig(-1)" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-size:16px;color:var(--color-text-primary);cursor:pointer">−</button>
+            <div id="bench-slots-val" style="min-width:30px;text-align:center;font-family:'Bebas Neue',cursive;font-size:22px;color:var(--color-text-primary)">7</div>
+            <button type="button" onclick="adjustReserveConfig(1)" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-size:16px;color:var(--color-text-primary);cursor:pointer">＋</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div><div style="font-size:12px;font-weight:700;color:var(--color-text-primary)">牛棚</div><div style="font-size:10px;color:var(--color-text-tertiary)">先發 5 人之外的投手名額</div></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button type="button" onclick="adjustBullpenConfig(-1)" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-size:16px;color:var(--color-text-primary);cursor:pointer">−</button>
+            <div id="bullpen-slots-val" style="min-width:30px;text-align:center;font-family:'Bebas Neue',cursive;font-size:22px;color:var(--color-text-primary)">9</div>
+            <button type="button" onclick="adjustBullpenConfig(1)" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-size:16px;color:var(--color-text-primary);cursor:pointer">＋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sec-hd">收藏統計</div>
+    <div style="background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-tertiary)">收藏球員數</span><span style="font-weight:700;color:var(--color-text-primary)" id="stat-collection">0 位</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-tertiary)">版本</span><span style="font-weight:700;color:var(--color-text-primary)">v6.1.0</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-tertiary)">球員總數</span><span style="font-weight:700;color:#4adb6a">93 位</span></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 球員詳情 -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetailBg(event)">
+  <div class="detail-sheet"><div id="ds-content"></div></div>
+</div>
+
+<!-- 球員比較 -->
+<div class="confirm-overlay" id="compare-overlay" onclick="closeCompareBg(event)">
+  <div class="confirm-box" style="max-width:340px;padding:0;overflow:hidden" onclick="event.stopPropagation()">
+    <div id="compare-content"></div>
+    <div class="confirm-btns" style="padding:12px 16px;gap:8px">
+      <button class="conf-btn" onclick="closeCompare()">取消</button>
+      <button class="conf-btn" id="compare-confirm-btn" style="background:#0f4a28;color:white;border-color:#1a6b3a" onclick="confirmCompare()">確認換人</button>
+    </div>
+  </div>
+</div>
+
+<!-- 重新開始確認 -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-title">確定要重新開始遊戲嗎？</div>
+    <div class="confirm-sub">重新開始後，目前收藏的所有卡牌與陣容將會<strong>清空重置</strong>，你需要重新進行新手選擇流程。<br><br>裝備教練不受影響。</div>
+    <div class="confirm-btns">
+      <button class="conf-btn" onclick="closeConfirm()">取消</button>
+      <button class="conf-btn danger" onclick="doChangeNation()">確定重新開始</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.app -->
+</div><!-- /.phone-frame -->
+<div class="phone-home-indicator"></div>
+</div><!-- /.phone-device -->
+</div><!-- /.device-stage -->
+  <script src="players-all.js?v=88"></script>
+<script src="players-data.js?v=88"></script>
+<script src="nations/tw.js?v=88"></script>
+<script src="nations/jp.js?v=88"></script>
+<script src="nations/us.js?v=88"></script>
+<script src="nations/do.js?v=88"></script>
+<script src="nations/ve.js?v=88"></script>
+<script src="nations/kr.js?v=88"></script>
+<script src="nations/cu.js?v=88"></script>
+<script src="nations/pr.js?v=88"></script>
+<script src="nations-data.js?v=88"></script>
+<script src="packs-data.js?v=88"></script>
+<script src="coaches-data.js?v=88"></script>
+<script src="eras-data.js?v=88"></script>
+<script src="game-core.js?v=88"></script>
+<script src="game.js?v=88"></script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+}
+</script>
+</body>
+</html>
