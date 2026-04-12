@@ -19,6 +19,7 @@ const GameState={
   teamViewMode:'standard',
   teamSortMode:'ovr',
   positionPenaltyEnabled:false,
+  ownedCoaches:['mgr1','bat1','pit1','def1','fit1','psy1'],
   equippedCoaches:{},
   matchCount:0,
   clearedDynasties:[],
@@ -28,7 +29,7 @@ const GameState={
   scoutDispatched:{},
 };
 // Proxy shortcuts for backward compatibility
-let gems,pity,myNation,myLegend,collection,lineup,battingOrder,bench,benchSlots,rotation,bullpen,bullpenSlots,equippedCoaches,matchCount,scoutCandidates,naturalizedPlayers,clearedDynasties;
+let gems,pity,myNation,myLegend,collection,lineup,battingOrder,bench,benchSlots,rotation,bullpen,bullpenSlots,ownedCoaches,equippedCoaches,matchCount,scoutCandidates,naturalizedPlayers,clearedDynasties;
 let teamViewMode,teamSortMode,positionPenaltyEnabled;
 function syncFromState(){
   gems=GameState.gems;pity=GameState.pity;
@@ -38,6 +39,7 @@ function syncFromState(){
   teamViewMode=GameState.teamViewMode||'standard';
   teamSortMode=GameState.teamSortMode||'ovr';
   positionPenaltyEnabled=GameState.positionPenaltyEnabled===true;
+  ownedCoaches=Array.isArray(GameState.ownedCoaches)?GameState.ownedCoaches:['mgr1','bat1','pit1','def1','fit1','psy1'];
   equippedCoaches=GameState.equippedCoaches;
   matchCount=GameState.matchCount;
   clearedDynasties=GameState.clearedDynasties||[];
@@ -55,6 +57,7 @@ function syncToState(){
   GameState.teamViewMode=teamViewMode;
   GameState.teamSortMode=teamSortMode;
   GameState.positionPenaltyEnabled=positionPenaltyEnabled===true;
+  GameState.ownedCoaches=ownedCoaches;
   GameState.equippedCoaches=equippedCoaches;
   GameState.matchCount=matchCount;
   GameState.clearedDynasties=clearedDynasties;
@@ -81,7 +84,7 @@ function buildSaveable(){
     _ovr:getOvr([...GameState.lineup,...GameState.bench,...GameState.rotation,...GameState.bullpen]),
     gems:GameState.gems,pity:GameState.pity,
     myNation:GameState.myNation,myLegend:GameState.myLegend,
-    equippedCoaches:GameState.equippedCoaches,matchCount:GameState.matchCount,
+    ownedCoaches:GameState.ownedCoaches,equippedCoaches:GameState.equippedCoaches,matchCount:GameState.matchCount,
     clearedDynasties:GameState.clearedDynasties,
     collection:GameState.collection.map(p=>({name:p.name,year:p.year??null,_naturalized:p._naturalized||false,_origNat:p._origNat||null})),
     lineup:GameState.lineup.map(p=>p?{name:p.name,year:p.year??null}:null),
@@ -106,7 +109,11 @@ function buildSaveable(){
 function restoreSave(saved){
   GameState.gems=saved.gems??3000;GameState.pity=saved.pity??0;
   GameState.myNation=saved.myNation??null;GameState.myLegend=saved.myLegend??null;
+  GameState.ownedCoaches=saved.ownedCoaches??['mgr1','bat1','pit1','def1','fit1','psy1'];
   GameState.equippedCoaches=saved.equippedCoaches??{};GameState.matchCount=saved.matchCount??0;
+  Object.values(GameState.equippedCoaches).forEach(cid=>{
+    if(cid&&!GameState.ownedCoaches.includes(cid))GameState.ownedCoaches.push(cid);
+  });
   GameState.clearedDynasties=saved.clearedDynasties??[];
   // 向後相容：支援舊格式（string）和新格式（{name,year}）
   const restoreRef=s=>{

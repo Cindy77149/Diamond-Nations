@@ -7,7 +7,7 @@
 
 /* ═══ DATA ═══ */
 const P_STATS=[{zh:'投球力',fill:'#e05060'},{zh:'控球力',fill:'#5a7aee'},{zh:'變化球',fill:'#9a60e8'},{zh:'體　力',fill:'#2a9a5a'},{zh:'心　理',fill:'#e8804a'}];
-const B_STATS=[{zh:'打擊力',fill:'#d4a017'},{zh:'選球眼',fill:'#5a7aee'},{zh:'速　度',fill:'#2a9a5a'},{zh:'守備力',fill:'#9a60e8'},{zh:'心　理',fill:'#e8804a'}];
+const B_STATS=[{zh:'打擊力',fill:'#d4a017'},{zh:'力　量',fill:'#d96b2b'},{zh:'選球眼',fill:'#5a7aee'},{zh:'速　度',fill:'#2a9a5a'},{zh:'守備力',fill:'#9a60e8'},{zh:'心　理',fill:'#e8804a'}];
 const RAR={
   h:{c:'#f8d050',bg:'#2a1a04',lbl:'HERO',bgC:'#18100a',bd:'#d4a017'},
   l:{c:'#cc88ff',bg:'#1a0a30',lbl:'LEGEND',bgC:'#100c1e',bd:'#8a50d8'},
@@ -609,7 +609,7 @@ function goScreen(id){
 const BANNERS=[
   {bg:'linear-gradient(135deg,#0f4a28,#1a6b3a)',icon:'🔥',tag:'限時活動',title:'限定卡包',sub:'2026 WBC 冠軍委內瑞拉限定 · HERO 5%',page:'gacha'},
   {bg:'linear-gradient(135deg,#100c1e,#2a1a04)',icon:'🏆',tag:'賽季模式',title:'WBC 2026',sub:'帶領你的國家征戰世界！',page:'match'},
-  {bg:'linear-gradient(135deg,#18100a,#2a1a04)',icon:'🧑‍🏫',tag:'教練系統',title:'招募教練',sub:'提升打擊・投手・守備・心理',page:'coach'},
+  {bg:'linear-gradient(135deg,#18100a,#2a1a04)',icon:'🧑‍🏫',tag:'教練系統',title:'招募教練',sub:'提升打擊・投手・守備・心理・調度',page:'coach'},
 ];
 let curBanner=0,bannerTimer=null;
 function buildBanner(){
@@ -661,8 +661,7 @@ function renderHome(){
   const subEl=document.getElementById('home-nation-sub');
   if(subEl)subEl.textContent=nation?nation.name+' · WBC':'選擇你的國家';
   // 球隊狀態卡
-  const allSlots=[...lineup,...getActiveBench(),...rotation,...getActiveBullpen()];
-  const ovr=getOvr(allSlots);
+  const ovr=getTeamSummaryOvr();
   const batFilled=lineup.filter(Boolean).length+getActiveBench().filter(Boolean).length;
   const rotFilled=rotation.filter(Boolean).length;
   const bullFilled=getActiveBullpen().filter(Boolean).length;
@@ -673,10 +672,23 @@ function renderHome(){
   if(el('hc-rot-cnt'))el('hc-rot-cnt').textContent=rotFilled+'/5';
   if(el('hc-bull-cnt'))el('hc-bull-cnt').textContent=bullFilled+'/'+getBullpenSlotCount();
   // 收藏進度卡
-  const total=93;const cnt=collection.length;const pct=Math.min(100,Math.round(cnt/total*100));
-  if(el('hc-col-count'))el('hc-col-count').textContent=cnt;
-  if(el('hc-col-fill'))el('hc-col-fill').style.width=pct+'%';
-  if(el('hc-col-pct'))el('hc-col-pct').textContent=pct+'%';
+  const uniqByKey=list=>Array.from(new Map(list.filter(Boolean).map(player=>[getPlayerKey(player),player])).values());
+  const allUnique=uniqByKey(ALL_PLAYERS);
+  const myFlag=nation?.flag||null;
+  const allCollected=uniqByKey(collection);
+  const nationPool=myFlag?allUnique.filter(player=>player.nat===myFlag):[];
+  const nationCollected=myFlag?allCollected.filter(player=>player.nat===myFlag):[];
+  const allTotal=allUnique.length;
+  const allCnt=allCollected.length;
+  const allPct=allTotal?Math.min(100,Math.round(allCnt/allTotal*100)):0;
+  const nationPct=nationPool.length?Math.min(100,Math.round(nationCollected.length/nationPool.length*100)):0;
+  if(el('hc-col-count'))el('hc-col-count').textContent=allCnt;
+  if(el('hc-col-sub'))el('hc-col-sub').textContent=`全部 ${allCnt} / ${allTotal}`;
+  if(el('hc-col-fill'))el('hc-col-fill').style.width=allPct+'%';
+  if(el('hc-col-pct'))el('hc-col-pct').textContent=allPct+'%';
+  if(el('hc-col-own'))el('hc-col-own').textContent=myFlag?`${nation?.name||'本國'} ${nationCollected.length} / ${nationPool.length}`:'本國 0 / 0';
+  if(el('hc-col-own-fill'))el('hc-col-own-fill').style.width=nationPct+'%';
+  if(el('hc-col-own-pct'))el('hc-col-own-pct').textContent=nationPct+'%';
   const dl=document.getElementById('daily-list');
   const dlFrag=document.createDocumentFragment();
   DAILY_DEF.forEach((d,idx)=>{
@@ -968,6 +980,18 @@ function getEffectiveOvr(player,type,idx){
   return Math.max(40,(player.ovr||0)-getPositionPenalty(player,type,idx));
 }
 function getOvr(arr){const f=arr.filter(Boolean);return f.length?Math.round(f.reduce((a,p)=>a+p.ovr,0)/f.length):'--';}
+function getWeightedMetric(groups){
+  const usable=groups
+    .map(group=>{
+      const vals=(group.values||[]).filter(v=>Number.isFinite(v));
+      return vals.length?{avg:vals.reduce((a,v)=>a+v,0)/vals.length,weight:group.weight}:null;
+    })
+    .filter(Boolean);
+  if(!usable.length)return'--';
+  const totalWeight=usable.reduce((a,g)=>a+g.weight,0);
+  if(!totalWeight)return'--';
+  return Math.round(usable.reduce((a,g)=>a+g.avg*g.weight,0)/totalWeight);
+}
 function getAssignedOvr(arr,type,startIdx=0){
   const vals=arr.map((p,i)=>p?getEffectiveOvr(p,type,i+startIdx):null).filter(v=>v!==null);
   return vals.length?Math.round(vals.reduce((a,v)=>a+v,0)/vals.length):'--';
@@ -976,23 +1000,51 @@ function getDefenseOvr(arr){
   const f=arr.filter(Boolean).filter(p=>!p.pit&&Array.isArray(p.stats)&&p.stats.length>3&&Number.isFinite(p.stats[3]));
   return f.length?Math.round(f.reduce((a,p)=>a+(p.stats[3]||0),0)/f.length):'--';
 }
+function getBattingSummaryOvr(){
+  const starterVals=lineup.map((p,i)=>p?getEffectiveOvr(p,'lineup',i):null).filter(v=>v!==null);
+  const benchVals=getActiveBench().map(p=>p?p.ovr:null).filter(v=>v!==null);
+  return getWeightedMetric([
+    {values:starterVals,weight:.86},
+    {values:benchVals,weight:.14},
+  ]);
+}
+function getPitchingSummaryOvr(){
+  const rotationVals=rotation.map((p,i)=>p?getEffectiveOvr(p,'rotation',i):null).filter(v=>v!==null);
+  const bullpenVals=getActiveBullpen().map((p,i)=>p?getEffectiveOvr(p,'bullpen',i):null).filter(v=>v!==null);
+  return getWeightedMetric([
+    {values:rotationVals,weight:.72},
+    {values:bullpenVals,weight:.28},
+  ]);
+}
+function getDefenseSummaryOvr(){
+  const posWeights={C:1.15,'1B':0.82,'2B':1.02,'3B':0.96,SS:1.14,LF:0.9,CF:1.08,RF:0.9,DH:0.45};
+  const weighted=lineup
+    .map((player,idx)=>{
+      if(!player||player.pit||!Array.isArray(player.stats)||!Number.isFinite(player.stats[3]))return null;
+      return {avg:player.stats[3]||0,weight:posWeights[DEF_POS[idx]]??1};
+    })
+    .filter(Boolean);
+  if(!weighted.length)return'--';
+  const totalWeight=weighted.reduce((a,g)=>a+g.weight,0);
+  return Math.round(weighted.reduce((a,g)=>a+g.avg*g.weight,0)/totalWeight);
+}
+function getTeamSummaryOvr(){
+  const bat=getBattingSummaryOvr();
+  const pit=getPitchingSummaryOvr();
+  const def=getDefenseSummaryOvr();
+  return getWeightedMetric([
+    {values:[bat],weight:.46},
+    {values:[pit],weight:.34},
+    {values:[def],weight:.20},
+  ]);
+}
 function updateTeamHeader(){
   const batCount=[...lineup,...getActiveBench()].filter(Boolean).length;
   const pitCount=[...rotation,...getActiveBullpen()].filter(Boolean).length;
-  const teamVals=[
-    ...lineup.map((p,i)=>p?getEffectiveOvr(p,'lineup',i):null),
-    ...getActiveBench().map(p=>p?p.ovr:null),
-    ...rotation.map((p,i)=>p?getEffectiveOvr(p,'rotation',i):null),
-    ...getActiveBullpen().map((p,i)=>p?getEffectiveOvr(p,'bullpen',i):null),
-  ].filter(v=>v!==null);
-  const pitVals=[
-    ...rotation.map((p,i)=>p?getEffectiveOvr(p,'rotation',i):null),
-    ...getActiveBullpen().map((p,i)=>p?getEffectiveOvr(p,'bullpen',i):null),
-  ].filter(v=>v!==null);
-  document.getElementById('t-ovr').textContent=teamVals.length?Math.round(teamVals.reduce((a,v)=>a+v,0)/teamVals.length):'--';
-  document.getElementById('t-bat').textContent=getAssignedOvr(lineup,'lineup');
-  document.getElementById('t-pit').textContent=pitVals.length?Math.round(pitVals.reduce((a,v)=>a+v,0)/pitVals.length):'--';
-  document.getElementById('t-def').textContent=getDefenseOvr(lineup);
+  document.getElementById('t-ovr').textContent=getTeamSummaryOvr();
+  document.getElementById('t-bat').textContent=getBattingSummaryOvr();
+  document.getElementById('t-pit').textContent=getPitchingSummaryOvr();
+  document.getElementById('t-def').textContent=getDefenseSummaryOvr();
   const batCntEl=document.getElementById('t-bat-cnt');
   const pitCntEl=document.getElementById('t-pit-cnt');
   if(batCntEl)batCntEl.textContent=batCount;
@@ -1384,6 +1436,19 @@ function clearExistingPlayerFromTeam(player,excludeType=null,excludeIdx=-1){
   rotation.forEach((cur,i)=>{if(cur&&getPlayerKey(cur)===key&&!(excludeType==='rotation'&&excludeIdx===i))rotation[i]=null;});
   bullpen.slice(0,getBullpenSlotCount()).forEach((cur,i)=>{if(cur&&getPlayerKey(cur)===key&&!(excludeType==='bullpen'&&excludeIdx===i))bullpen[i]=null;});
 }
+function getAbilityValue(player,index){
+  if(!player)return 0;
+  if(player.pit)return player.stats?.[index]??0;
+  switch(index){
+    case 0:return player.stats?.[0]??0; // 打擊力
+    case 1:return player.power??player.stats?.[0]??0; // 力量
+    case 2:return player.stats?.[1]??0; // 選球眼
+    case 3:return player.stats?.[2]??0; // 速度
+    case 4:return player.stats?.[3]??0; // 守備力
+    case 5:return player.stats?.[4]??0; // 心理
+    default:return 0;
+  }
+}
 let _comparePending=null;
 function showCompare(current,incoming){
   _comparePending=incoming;
@@ -1394,7 +1459,7 @@ function showCompare(current,incoming){
   const ovrDiffColor=ovrDiff>0?'#4adb6a':ovrDiff<0?'#f06070':'rgba(255,255,255,.4)';
   const ovrDiffStr=ovrDiff>0?`▲${ovrDiff}`:ovrDiff<0?`▼${Math.abs(ovrDiff)}`:'—';
   const statRows=defs.map((d,i)=>{
-    const a=current.stats[i],b=incoming.stats[i],diff=b-a;
+    const a=getAbilityValue(current,i),b=getAbilityValue(incoming,i),diff=b-a;
     const diffColor=diff>0?'#4adb6a':diff<0?'#f06070':'var(--color-text-tertiary)';
     const diffStr=diff>0?`+${diff}`:diff<0?`${diff}`:'—';
     return `<div class="cmp-row">
@@ -1511,8 +1576,44 @@ function getCoachBonus(){
     if(c.type==='bat')batBonus+=Math.round(c.ovr*0.05);
     if(c.type==='pit')pitBonus+=Math.round(c.ovr*0.04);
     if(c.type==='psy'){batBonus+=Math.round(c.ovr*0.02);pitBonus+=Math.round(c.ovr*0.02);}
+    if(c.type==='mgr'){batBonus+=Math.round(c.ovr*0.03);pitBonus+=Math.round(c.ovr*0.03);}
   });
   return{batBonus,pitBonus};
+}
+function hasCoachOwned(id){
+  return Array.isArray(ownedCoaches)&&ownedCoaches.includes(id);
+}
+function getCoachRecruitPool(){
+  const unowned=ALL_COACHES.filter(c=>!hasCoachOwned(c.id));
+  return unowned.length?unowned:ALL_COACHES.slice();
+}
+function rollCoachRecruit(){
+  const pool=getCoachRecruitPool();
+  if(!pool.length)return null;
+  const weighted=[];
+  pool.forEach(c=>{
+    const weight={c:50,r:28,l:16,h:6,x:3}[c.rarity]??20;
+    for(let i=0;i<weight;i++)weighted.push(c);
+  });
+  return weighted[Math.floor(Math.random()*weighted.length)]||pool[0];
+}
+function recruitCoach(){
+  const cost=300;
+  const coach=rollCoachRecruit();
+  if(!coach){showSaveToast('目前沒有可招募教練');return;}
+  if(gems<cost){showSaveToast(`💎 不足！需要 ${cost}`);return;}
+  gems-=cost;
+  if(hasCoachOwned(coach.id)){
+    coach.lv=Math.min(coach.maxLv,coach.lv+1);
+    showSaveToast(`重複獲得 ${coach.name}，教練等級 +1`);
+  }else{
+    ownedCoaches.push(coach.id);
+    showSaveToast(`成功招募 ${coach.name}`);
+  }
+  updateGemDisp();
+  renderScoutScreen();
+  renderCoach();
+  autoSave();
 }
 let selEraIdx=5;
 let selMatchMode=null;
@@ -1928,7 +2029,9 @@ function resetGame(){document.getElementById('game-result').classList.remove('sh
 /* ═══ COACH ═══ */
 function renderCoach(){
   const br=document.getElementById('coach-bonus-row');br.innerHTML='';
-  const colorMap={bat:'#d4a017',pit:'#5a7aee',def:'#4adb6a',fit:'#e8804a',psy:'#cc88ff'};
+  const colorMap={bat:'#d4a017',pit:'#5a7aee',def:'#4adb6a',fit:'#e8804a',psy:'#cc88ff',mgr:'#e05a2a'};
+  const equippedCount=COACH_TYPES.reduce((n,t)=>n+(equippedCoaches[t.id]?1:0),0);
+  const meta=document.getElementById('coach-meta');if(meta)meta.textContent=`已裝備 ${equippedCount} / ${COACH_TYPES.length}`;
   const bonusFrag=document.createDocumentFragment();
   COACH_TYPES.forEach(t=>{
     const cid=equippedCoaches[t.id];const c=cid?COACH_MAP.get(cid):null;
@@ -1945,29 +2048,45 @@ function renderCoach(){
   const tabs=document.getElementById('coach-tabs');tabs.innerHTML='';tabs.appendChild(tabFrag);
   const coaches=ALL_COACHES.filter(c=>c.type===coachTab);
   const ct=COACH_TYPES.find(t=>t.id===coachTab);
+  const typeCopy=document.getElementById('coach-type-copy');
+  if(typeCopy)typeCopy.textContent=ct?`${ct.icon} ${ct.label}：${ct.desc}`:'裝備教練後自動套用到比賽';
   const cardFrag=document.createDocumentFragment();
   const list=document.getElementById('coach-list');
   coaches.forEach(c=>{
+    const isOwned=hasCoachOwned(c.id);
     const isEquipped=equippedCoaches[c.type]===c.id;const rs=RAR[c.rarity]||RAR.r;
-    const card=document.createElement('div');card.className='coach-card'+(isEquipped?' equipped':'');
+    const card=document.createElement('div');card.className='coach-card'+(isEquipped?' equipped':'')+(!isOwned?' locked':'');
     card.innerHTML=`
+      <div class="coach-card-accent" style="background:${ct.color}"></div>
       <div class="coach-card-header">
         <div class="cc-av" style="background:${rs.bgC};border:1px solid ${rs.bd}">${c.av}</div>
         <div class="cc-inf">
-          <div class="cc-name">${c.name} ${isEquipped?'<span style="font-size:9px;color:#4adb6a">✓ 裝備中</span>':''}</div>
+          <div class="cc-topline">
+            <div class="cc-name">${c.name}</div>
+            <div class="cc-badge" style="background:${rs.bgC};border:1px solid ${rs.bd};color:${rs.c}">${isOwned?(rs.lbl||''):'未持有'}</div>
+          </div>
           <div class="cc-role">${c.en||''} · ${ct.label} · ${c.obtain}獲得</div>
-          <div style="font-size:9px;color:var(--color-text-tertiary);margin-top:2px;line-height:1.4">${c.desc}</div>
+          <div class="cc-desc">${c.desc}</div>
         </div>
-        <div style="text-align:center"><div class="cc-lv" style="color:${rs.c}">Lv.${c.lv}</div><div class="cc-lv-lbl">/${c.maxLv}</div></div>
+        <div class="cc-lv-wrap">
+          <div class="cc-lv" style="color:${rs.c}">Lv.${c.lv}</div>
+          <div class="cc-lv-lbl">/${c.maxLv}</div>
+        </div>
       </div>
       <div class="coach-stats">
         <div class="cs-row"><span class="cs-lbl">${ct.label}能力</span><div class="cs-bar"><div class="cs-fill" style="background:${ct.color};width:${c.ovr}%"></div></div><span class="cs-val">${c.ovr}</span></div>
         <div class="cs-row"><span class="cs-lbl">加成效果</span><div style="flex:1;font-size:11px;font-weight:700;color:${ct.color}">${c.bonus}</div></div>
       </div>
       <div class="coach-btns">
-        ${isEquipped?`<button class="cb unequip" data-id="${c.id}">卸下教練</button>`:`<button class="cb equip" data-id="${c.id}">裝備教練</button>`}
-        <button class="cb upgrade" data-id="${c.id}" ${c.lv>=c.maxLv?'disabled':''}>升級 (🪙 500)</button>
+        ${!isOwned
+          ?`<button class="cb locked" disabled>尚未持有</button>`
+          :isEquipped
+            ?`<button class="cb unequip" data-id="${c.id}">卸下教練</button>`
+            :`<button class="cb equip" data-id="${c.id}">裝備教練</button>`}
+        <button class="cb upgrade" data-id="${c.id}" ${!isOwned||c.lv>=c.maxLv?'disabled':''}>升級 (🪙 500)</button>
       </div>`;
+    const desc=card.querySelector('.cc-desc');
+    if(desc&&isEquipped)desc.insertAdjacentHTML('beforeend',' <span style="color:#4adb6a;font-weight:700">· 目前裝備中</span>');
     card.querySelector('.cb.equip, .cb.unequip')?.addEventListener('click',()=>{
       if(isEquipped){delete equippedCoaches[c.type];}else{equippedCoaches[c.type]=c.id;if(!dailyState.coach){dailyState.coach=true;saveDailyState();}}
       renderCoach();autoSave();
@@ -2462,7 +2581,7 @@ function showDetail(p,context=null){
 
   const isRetro=p.rar==='x';const isH=p.rar==='h';const isL=p.rar==='l';const isR2=p.rar==='r';
   const story=(p.story||'尚無球員故事。').replace(/<hl>/g,'<span class="ds-hl">').replace(/<\/hl>/g,'</span>');
-  const rows=defs.map((s,i)=>`<div class="ds-stat-row"><span class="ds-sn">${s.zh}</span><div class="ds-track"><div class="ds-fill" style="background:${s.fill};width:0%;--w:${p.stats[i]??0}%"></div></div><span class="ds-sv">${p.stats[i]??0}</span></div>`).join('');
+  const rows=defs.map((s,i)=>`<div class="ds-stat-row"><span class="ds-sn">${s.zh}</span><div class="ds-track"><div class="ds-fill" style="background:${s.fill};width:0%;--w:${getAbilityValue(p,i)}%"></div></div><span class="ds-sv">${getAbilityValue(p,i)}</span></div>`).join('');
   const skills=(p.skills&&p.skills.length)
     ?p.skills.map(s=>`<div class="ds-sk"><div class="ds-sk-i">${s.i}</div><div class="ds-sk-n">${s.n}</div><div class="ds-sk-d">${s.d}</div></div>`).join('')
     :`<div class="ds-sk empty"><div class="ds-sk-n">尚無技能資料</div><div class="ds-sk-d">這張卡目前沒有額外技能描述。</div></div>`;

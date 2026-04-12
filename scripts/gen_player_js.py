@@ -626,6 +626,11 @@ def bat_stats(d: dict) -> list[int]:
     return [bat, eye, spd, dfs, men]
 
 
+def bat_power(d: dict) -> int:
+    """力量（獨立欄位，來源：RTG_POWER）"""
+    return safe_int(d["RTG_POWER"])
+
+
 def pit_stats(d: dict) -> list[int]:
     """[投球力, 控球力, 變化球, 體力, 心理]"""
     pos  = d["pos"] or "RP"
@@ -926,6 +931,7 @@ def make_entry(d: dict) -> str:
     d["RTG_OVR"] = ovr
 
     stats_val  = pit_stats(d) if is_p else bat_stats(d)
+    power_val  = None if is_p else bat_power(d)
     excel_val  = excel_stats(d, is_p)
     skills_val = make_skills(d, is_p)
     story_val  = make_story(d, is_p)
@@ -955,6 +961,7 @@ def make_entry(d: dict) -> str:
         f"pit:{'true' if is_p else 'false'}",
         f"era:[{sea}]",
         f"stats:{stats_js}",
+        *( [f"power:{power_val}"] if power_val is not None else [] ),
         f"excel:{js_obj(excel_val)}",
         f"story:{js_str(story_val)}",
         f"skills:{skills_js}",

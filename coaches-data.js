@@ -69,9 +69,23 @@ window.ALL_COACHES=[
    desc:'前 MLB 投手，紅雀隊心理教練，哈佛大學心理諮商碩士。現任職 MLB 多隊心理顧問，著有《Ninety Percent Mental》。',
    story:'Bob Tewksbury 將自身的職業球員經歷與正統心理學訓練完美結合。他幫助過大衛·歐提茲在關鍵比賽時的心理調適，也協助多位球員克服比賽焦慮。他的書名直接引用了棒球界最知名的說法：「棒球 90% 靠心理。」',
    skills:[{i:'🌟',n:'哈佛心理師',d:'關鍵時刻+15%'},{i:'📚',n:'90%心理',d:'逆境爆發+20%'},{i:'💡',n:'前球員見解',d:'比賽焦慮完全消除'}],obtain:'抽卡'},
+  /* ── 總教練 ── */
+  {id:'mgr1',type:'mgr',name:'原辰德',en:'Tatsunori Hara',nat:'🇯🇵',lv:1,maxLv:5,ovr:82,bonus:'+4% 全隊調度',rarity:'r',av:'🧭',
+   desc:'日本名將總教練代表，擅長短期賽事調度與臨場應變，能穩定整體隊伍節奏。',
+   story:'原辰德長年執掌日本職棒豪門與國家隊，短期盃賽的換投節奏與打線安排極具代表性，是亞洲棒球最成熟的總教練範本之一。',
+   skills:[{i:'🧭',n:'穩定調度',d:'全隊 OVR+4%'},{i:'📋',n:'臨場換將',d:'比賽中調度成功率提升'},{i:'🇯🇵',n:'短期賽經驗',d:'關鍵局表現更穩'}],obtain:'任務'},
+  {id:'mgr2',type:'mgr',name:'Tony La Russa',en:'Tony La Russa',nat:'🇺🇸',lv:3,maxLv:5,ovr:90,bonus:'+7% 全隊調度',rarity:'l',av:'🎩',
+   desc:'三屆世界大賽冠軍總教練，最擅長牛棚運用與比賽後段戰術安排，是現代調度派代表人物。',
+   story:'Tony La Russa 幾乎重新定義了現代棒球的牛棚分工與比賽節奏管理，他的調度哲學影響整個大聯盟數十年。',
+   skills:[{i:'🎩',n:'戰術大師',d:'全隊 OVR+7%'},{i:'⚾',n:'牛棚運用',d:'投手群穩定度提升'},{i:'♟️',n:'後段博弈',d:'終盤作戰能力提升'}],obtain:'抽卡'},
+  {id:'mgr3',type:'mgr',name:'Bobby Cox',en:'Bobby Cox',nat:'🇺🇸',lv:4,maxLv:5,ovr:96,bonus:'+10% 全隊調度',rarity:'h',av:'👔',
+   desc:'名人堂級總教練，擅長長期養成與短期賽整合，能讓整支球隊在攻守兩端發揮最大化。',
+   story:'Bobby Cox 帶領勇士建立王朝，兼具明星管理、投手調度與長期體系打造能力，是「整體型總教練」的代表。',
+   skills:[{i:'👔',n:'王朝掌舵',d:'全隊 OVR+10%'},{i:'🏆',n:'名人堂調度',d:'攻守兩端全面提升'},{i:'🛡️',n:'整體系統',d:'比賽穩定度大幅提高'}],obtain:'抽卡'},
 ];
 
 window.COACH_TYPES=[
+  {id:'mgr',label:'總教練',icon:'🧭',color:'#e05a2a',desc:'提升全隊調度與整體穩定性'},
   {id:'bat',label:'打擊教練',icon:'🏏',color:'#d4a017',desc:'提升打線整體 OVR'},
   {id:'pit',label:'投手教練',icon:'⚾',color:'#5a7aee',desc:'降低對手打擊率'},
   {id:'def',label:'守備教練',icon:'🛡️',color:'#4adb6a',desc:'提升守備能力'},
