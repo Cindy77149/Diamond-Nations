@@ -1782,22 +1782,60 @@ function recruitCoach(){
 let selEraIdx=5;
 let selMatchMode=null;
 let deferredInstallPrompt=null;
+let expandedMatchRosterKey=null;
 function getDynastyKey(opp){
   return `${opp._eraYear||opp.era||'na'}|${opp.name}`;
 }
-function setMatchMode(mode){
-  selMatchMode=selMatchMode===mode?null:mode;
+function getMatchRosterKey(opp){
+  return `${opp._challengeType||'journey'}|${opp._eraYear||opp.era||'na'}|${opp.name}`;
+}
+function toggleMatchRoster(key){
+  expandedMatchRosterKey=expandedMatchRosterKey===key?null:key;
   renderMatchSetup();
 }
+function setMatchMode(mode){
+  selMatchMode=selMatchMode===mode?null:mode;
+  if(!selMatchMode)expandedMatchRosterKey=null;
+  renderMatchSetup();
+}
+function getMyMatchPreviewRatings(){
+  const {batBonus,pitBonus}=getCoachBonus();
+  const myBatSlots=battingOrder.map(lineupIdx=>lineup[lineupIdx]?{player:lineup[lineupIdx],idx:lineupIdx}:null).filter(Boolean);
+  const batOvr=myBatSlots.length
+    ?Math.round(myBatSlots.reduce((sum,slot)=>sum+getEffectiveOvr(slot.player,'lineup',slot.idx),0)/myBatSlots.length)+Math.round(batBonus/10)
+    :72;
+  const pitOvr=rotation[0]
+    ?(getEffectiveOvr(rotation[0],'rotation',0)||72)+Math.round(pitBonus/10)
+    :72;
+  return {
+    batOvr:clampRating(batOvr),
+    pitOvr:clampRating(pitOvr),
+    overall:clampRating(batOvr*.56+pitOvr*.44),
+  };
+}
+function getOpponentMatchPreviewRatings(opp){
+  const roster=buildOpponentTeamFromYear(opp);
+  const batBase=roster.starters.length
+    ?Math.round(roster.starters.reduce((sum,player)=>sum+player.ovr,0)/roster.starters.length)
+    :opp.str;
+  const pitPool=[...roster.rotation,...roster.bullpen];
+  const pitBase=pitPool.length
+    ?Math.round(pitPool.reduce((sum,player)=>sum+player.ovr,0)/pitPool.length)
+    :opp.str;
+  const batOvr=clampRating(batBase*.82+opp.str*.18);
+  const pitOvr=clampRating(pitBase*.82+opp.str*.18);
+  const starterPitOvr=roster.rotation[0]
+    ?clampRating(roster.rotation[0].ovr*.72+pitOvr*.28)
+    :pitOvr;
+  return {
+    roster,
+    batOvr,
+    pitOvr:starterPitOvr,
+    overall:clampRating(batOvr*.56+starterPitOvr*.44),
+  };
+}
 function renderMatchSetup(){
-  const rawVals=[
-    ...lineup.map((p,i)=>p?getEffectiveOvr(p,'lineup',i):null),
-    ...getActiveBench().map(p=>p?p.ovr:null),
-    ...rotation.map((p,i)=>p?getEffectiveOvr(p,'rotation',i):null),
-    ...getActiveBullpen().map((p,i)=>p?getEffectiveOvr(p,'bullpen',i):null),
-  ].filter(v=>v!==null);
-  const rawOvr=rawVals.length?Math.round(rawVals.reduce((a,v)=>a+v,0)/rawVals.length):'--';
-  const{batBonus}=getCoachBonus();
+  const myPreview=getMyMatchPreviewRatings();
   const n=getNationConfig(myNation);
   document.getElementById('match-mode-grid')?.classList.toggle('collapsed',!!selMatchMode);
   ['journey','dynasty','special'].forEach(mode=>{
@@ -1881,16 +1919,25 @@ function renderMatchSetup(){
   const ol=document.getElementById('opp-list');
   if(ol&&curEra){
     ol.innerHTML='';
-    const myStr=parseInt(rawOvr==='--'?75:Math.min(99,parseInt(rawOvr)+Math.round(batBonus/10)))||75;
+    const myStr=myPreview.overall||75;
     const myNatFlag=n?n.flag:'';
     curEra.teams.forEach(opp=>{
       if(myNatFlag&&opp.flag===myNatFlag)return;
-      const diff=myStr-opp.str;const dc=diff>=0?'#4adb6a':'#f06070';
+      const oppPreview=getOpponentMatchPreviewRatings(opp);
+      const diff=myStr-oppPreview.overall;const dc=diff>=0?'#4adb6a':'#f06070';
       const diffTxt=diff>0?`+${diff}`:diff===0?'±0':`${diff}`;
+      const oppRoster=oppPreview.roster;
+      const rosterKey=getMatchRosterKey(opp);
+      const expanded=expandedMatchRosterKey===rosterKey;
+      const starterPreview=oppRoster.starters.slice(0,4).map(player=>cleanName(player.name)).join(' · ');
       const row=document.createElement('div');row.className='opp-row';
       const champBadge=opp.champion?'<span class="champ-tag">🏆 冠軍</span>':'';
-      const keyPlayers=opp.batters?opp.batters.slice(0,2).join(' · '):'';
-      row.innerHTML=`<div class="opp-flag">${opp.flag}</div><div class="opp-inf"><div style="display:flex;align-items:center;gap:5px"><div class="opp-nm">${opp.name}</div>${champBadge}</div><div class="opp-sb">${opp.desc}</div><div class="opp-sb" style="margin-top:4px">${keyPlayers}</div></div><div style="text-align:right;flex-shrink:0"><div class="opp-str" style="color:${dc}">${opp.str}</div><div style="font-size:9px;color:${dc}">戰力差 ${diffTxt}</div></div><div class="opp-arr">›</div>`;
+      const keyPlayers=oppRoster.starters.slice(0,2).map(player=>cleanName(player.name)).join(' · ');
+      row.innerHTML=`<div class="opp-flag">${opp.flag}</div><div class="opp-inf"><div style="display:flex;align-items:center;gap:5px"><div class="opp-nm">${opp.name}</div>${champBadge}</div><div class="opp-sb">${opp.desc}</div><div class="opp-sb" style="margin-top:4px">${keyPlayers}</div><div class="opp-roster-box"><div class="opp-roster-line"><span class="opp-roster-tag">先發</span><span class="opp-roster-copy">${starterPreview||'依年度名單自動組成'}</span></div><div class="opp-roster-meta">打線 ${oppPreview.batOvr} · 先發 ${oppPreview.pitOvr} · 替補 ${oppRoster.bench.length} 人 · 牛棚 ${oppRoster.bullpen.length} 人</div><button class="opp-roster-toggle" type="button">${expanded?'收起名單':'看完整名單'}</button>${expanded?`<div class="opp-roster-detail"><div class="opp-roster-sec"><div class="opp-roster-sec-title">先發 9 人</div><div class="opp-roster-list">${oppRoster.starters.map(player=>`<span>${cleanName(player.name)}</span>`).join('')}</div></div><div class="opp-roster-sec"><div class="opp-roster-sec-title">替補</div><div class="opp-roster-list">${oppRoster.bench.length?oppRoster.bench.map(player=>`<span>${cleanName(player.name)}</span>`).join(''):'<span>無</span>'}</div></div><div class="opp-roster-sec"><div class="opp-roster-sec-title">先發輪值</div><div class="opp-roster-list">${oppRoster.rotation.length?oppRoster.rotation.map(player=>`<span>${cleanName(player.name)}</span>`).join(''):'<span>無</span>'}</div></div><div class="opp-roster-sec"><div class="opp-roster-sec-title">牛棚</div><div class="opp-roster-list">${oppRoster.bullpen.length?oppRoster.bullpen.map(player=>`<span>${cleanName(player.name)}</span>`).join(''):'<span>無</span>'}</div></div></div>`:''}</div></div><div style="text-align:right;flex-shrink:0"><div class="opp-str" style="color:${dc}">${oppPreview.overall}</div><div style="font-size:9px;color:${dc}">戰力差 ${diffTxt}</div></div><div class="opp-arr">›</div>`;
+      row.querySelector('.opp-roster-toggle')?.addEventListener('click',e=>{
+        e.stopPropagation();
+        toggleMatchRoster(rosterKey);
+      });
       row.onclick=()=>startGame({...opp});
       ol.appendChild(row);
     });
@@ -1907,6 +1954,11 @@ function renderMatchSetup(){
     dynastyTeams.forEach(opp=>{
       const key=getDynastyKey(opp);
       const cleared=clearedDynasties.includes(key);
+      const oppPreview=getOpponentMatchPreviewRatings(opp);
+      const oppRoster=oppPreview.roster;
+      const rosterKey=getMatchRosterKey({...opp,_challengeType:'dynasty'});
+      const expanded=expandedMatchRosterKey===rosterKey;
+      const starterPreview=oppRoster.starters.slice(0,3).map(player=>cleanName(player.name)).join(' · ');
       const card=document.createElement('button');
       card.type='button';
       card.className='dynasty-card'+(cleared?' cleared':'');
@@ -1921,12 +1973,22 @@ function renderMatchSetup(){
           </div>
           <div class="dynasty-flag">${opp.flag}</div>
         </div>
-        <div class="dynasty-copy">${opp.desc}${opp.batters?.length?`<br>${opp.batters.slice(0,2).join(' · ')}`:''}</div>
+        <div class="dynasty-copy">${opp.desc}${starterPreview?`<br>${oppRoster.starters.slice(0,2).map(player=>cleanName(player.name)).join(' · ')}`:''}</div>
+        <div class="opp-roster-box dynasty-roster-box">
+          <div class="opp-roster-line"><span class="opp-roster-tag">先發</span><span class="opp-roster-copy">${starterPreview||'依年度名單自動組成'}</span></div>
+          <div class="opp-roster-meta">打線 ${oppPreview.batOvr} · 先發 ${oppPreview.pitOvr} · 替補 ${oppRoster.bench.length} 人 · 牛棚 ${oppRoster.bullpen.length} 人</div>
+          <button class="opp-roster-toggle dynasty" type="button">${expanded?'收起名單':'看完整名單'}</button>
+          ${expanded?`<div class="opp-roster-detail"><div class="opp-roster-sec"><div class="opp-roster-sec-title">先發 9 人</div><div class="opp-roster-list">${oppRoster.starters.map(player=>`<span>${cleanName(player.name)}</span>`).join('')}</div></div><div class="opp-roster-sec"><div class="opp-roster-sec-title">替補</div><div class="opp-roster-list">${oppRoster.bench.length?oppRoster.bench.map(player=>`<span>${cleanName(player.name)}</span>`).join(''):'<span>無</span>'}</div></div><div class="opp-roster-sec"><div class="opp-roster-sec-title">先發輪值</div><div class="opp-roster-list">${oppRoster.rotation.length?oppRoster.rotation.map(player=>`<span>${cleanName(player.name)}</span>`).join(''):'<span>無</span>'}</div></div><div class="opp-roster-sec"><div class="opp-roster-sec-title">牛棚</div><div class="opp-roster-list">${oppRoster.bullpen.length?oppRoster.bullpen.map(player=>`<span>${cleanName(player.name)}</span>`).join(''):'<span>無</span>'}</div></div></div>`:''}
+        </div>
         <div class="dynasty-meta">
-          <div class="dynasty-str">OVR ${opp.str}</div>
+          <div class="dynasty-str">OVR ${oppPreview.overall}</div>
           <div class="dynasty-tag ${cleared?'done':''}">${cleared?'首通完成':'首通獎勵 150💎'}</div>
         </div>
       `;
+      card.querySelector('.opp-roster-toggle')?.addEventListener('click',e=>{
+        e.stopPropagation();
+        toggleMatchRoster(rosterKey);
+      });
       card.onclick=()=>startGame({...opp,_challengeType:'dynasty',_dynastyKey:key});
       dg.appendChild(card);
     });
@@ -1953,58 +2015,258 @@ function startGame(opp){
   const myBatOvr=myBatSlots.length>0
     ?Math.round(myBatSlots.reduce((s,slot)=>s+getEffectiveOvr(slot.player,'lineup',slot.idx),0)/myBatSlots.length)+Math.round(batBonus/10)
     :72;
-  // 先發投手 OVR（只算投手）
-  const myPitOvr=myPitArr.length>0
-    ?Math.round((
-      [
-        ...rotation.map((p,i)=>p?getEffectiveOvr(p,'rotation',i):null),
-        ...getActiveBullpen().map((p,i)=>p?getEffectiveOvr(p,'bullpen',i):null),
-      ].filter(v=>v!==null).reduce((s,v)=>s+v,0)
-    )/myPitArr.length)+Math.round(pitBonus/10)
+  // 本場先發投手 OVR
+  const myPitOvr=rotation[0]
+    ?(getEffectiveOvr(rotation[0],'rotation',0)||72)+Math.round(pitBonus/10)
     :72;
-  // 對手打線略低於整體強度（整體 str 含守備加成）
-  const oppBatOvr=opp.str;   // 對手打線與投手同強度，保持對稱
-  const oppPitOvr=opp.str;
 
   const myBatters=myBatSlots.length>0
-    ?myBatSlots.map(slot=>({name:slot.player.name,pos:slot.player.pos,ovr:getEffectiveOvr(slot.player,'lineup',slot.idx),ab:0,h:0,hr:0,rbi:0}))
-    :[{name:'打者A',pos:'OF',ovr:72,ab:0,h:0,hr:0,rbi:0}];
-  const mySP=rotation.map((p,i)=>p?{name:p.name,ovr:getEffectiveOvr(p,'rotation',i)||75,stamina:100,type:'SP'}:null).filter(Boolean);
-  const myRP=getActiveBullpen().map((p,i)=>p?{name:p.name,ovr:getEffectiveOvr(p,'bullpen',i),stamina:100,type:hasPos(p,'CP')?'CP':'RP'}:null).filter(Boolean);
-  const myPitchers=[...mySP,...myRP];
-  if(myPitchers.length===0)myPitchers.push({name:'先發投手',ovr:myPitOvr,stamina:100,type:'SP'});
-
-  // 對手打線名字：用 opp.batters 如果有
-  const oppBatterNames=opp.batters||Array.from({length:9},(_,i)=>`${opp.name} ${i+1}番`);
-  const oppBatters=oppBatterNames.slice(0,9).map(nm=>({name:nm,pos:'',ovr:oppBatOvr,ab:0,h:0,hr:0,rbi:0}));
-  // 補滿9人
-  while(oppBatters.length<9)oppBatters.push({name:`${opp.name} ${oppBatters.length+1}番`,pos:'',ovr:oppBatOvr,ab:0,h:0,hr:0,rbi:0});
-
-  // 對手投手：用 opp.pitchers 如果有
-  const oppPitcherNames=opp.pitchers||[opp.name+' 先發'];
-  const oppPitchers=[
-    {name:oppPitcherNames[0]||opp.name+' 先發',ovr:oppPitOvr,stamina:100,type:'SP'},
-    {name:oppPitcherNames[1]||opp.name+' 中繼',ovr:Math.round(oppPitOvr*0.97),stamina:100,type:'RP'},
-    {name:oppPitcherNames[2]||opp.name+' 終結',ovr:Math.round(oppPitOvr*0.98),stamina:100,type:'CP'},
+    ?myBatSlots.map((slot,orderIdx)=>buildBatterProfile({
+      name:slot.player.name,
+      pos:slot.player.pos,
+      ovr:getEffectiveOvr(slot.player,'lineup',slot.idx),
+      player:slot.player,
+      slotIndex:orderIdx,
+    }))
+    :[buildBatterProfile({name:'打者A',pos:'OF',ovr:72,slotIndex:0})];
+  const myBenchProfiles=getActiveBench()
+    .filter(Boolean)
+    .map((player,i)=>buildBatterProfile({
+      name:player.name,
+      pos:player.pos,
+      ovr:player.ovr,
+      player,
+      slotIndex:9+i,
+    }));
+  const mySP=rotation.map((p,i)=>p?buildPitcherProfile({name:p.name,ovr:getEffectiveOvr(p,'rotation',i)||75,type:'SP',player:p}):null).filter(Boolean);
+  const myRP=getActiveBullpen().map((p,i)=>p?buildPitcherProfile({name:p.name,ovr:getEffectiveOvr(p,'bullpen',i),type:hasPos(p,'CP')?'CP':'RP',player:p}):null).filter(Boolean);
+  const myPitchers=[
+    ...(mySP[0]?[mySP[0]]:[]),
+    ...myRP,
+    ...mySP.slice(1).map(p=>({...p,type:'LR'})),
   ];
+  if(myPitchers.length===0)myPitchers.push(buildPitcherProfile({name:'先發投手',ovr:myPitOvr,type:'SP'}));
 
-  gs={inning:1,half:'top',outs:0,bases:[0,0,0],scores:[0,0],done:false,opp,
+  const oppRoster=buildOpponentTeamFromYear(opp);
+  const oppBatBase=oppRoster.starters.length
+    ?Math.round(oppRoster.starters.reduce((sum,player)=>sum+player.ovr,0)/oppRoster.starters.length)
+    :opp.str;
+  const oppPitPool=[...oppRoster.rotation,...oppRoster.bullpen];
+  const oppPitBase=oppPitPool.length
+    ?Math.round(oppPitPool.reduce((sum,player)=>sum+player.ovr,0)/oppPitPool.length)
+    :opp.str;
+  const oppBatOvr=clampRating(oppBatBase*.82+opp.str*.18);
+  const oppPitOvr=clampRating(oppPitBase*.82+opp.str*.18);
+  const oppBatters=oppRoster.starters.length
+    ?oppRoster.starters.map((player,i)=>buildBatterProfile({
+      name:player.name,
+      pos:player.pos||'',
+      ovr:clampRating(player.ovr*.72+oppBatOvr*.28),
+      player,
+      slotIndex:i,
+    }))
+    :Array.from({length:9},(_,i)=>buildBatterProfile({name:`${opp.name} ${i+1}番`,pos:'',ovr:oppBatOvr,slotIndex:i}));
+  const oppBenchProfiles=oppRoster.bench.map((player,i)=>buildBatterProfile({
+    name:player.name,
+    pos:player.pos||'',
+    ovr:clampRating(player.ovr*.72+oppBatOvr*.28),
+    player,
+    slotIndex:9+i,
+  }));
+  while(oppBatters.length<9)oppBatters.push(buildBatterProfile({name:`${opp.name} ${oppBatters.length+1}番`,pos:'',ovr:oppBatOvr,slotIndex:oppBatters.length}));
+
+  const oppPitchers=[...oppRoster.rotation,...oppRoster.bullpen].length
+    ?[
+      ...(oppRoster.rotation[0]?[oppRoster.rotation[0]]:[]),
+      ...oppRoster.bullpen,
+      ...oppRoster.rotation.slice(1),
+    ].map((player,i)=>buildPitcherProfile({
+      name:player.name,
+      ovr:clampRating(player.ovr*.72+oppPitOvr*.28-(i===1?1:0)+(i===2?-1:0)),
+      type:i===0?'SP':hasPos(player,'CP')?'CP':(hasPos(player,'RP')?'RP':'LR'),
+      player,
+    }))
+    :[
+      buildPitcherProfile({name:opp.name+' 先發',ovr:oppPitOvr,type:'SP'}),
+      buildPitcherProfile({name:opp.name+' 中繼',ovr:Math.round(oppPitOvr*0.97),type:'RP'}),
+      buildPitcherProfile({name:opp.name+' 終結',ovr:Math.round(oppPitOvr*0.98),type:'CP'}),
+    ];
+
+  const displayMyPitOvr=myPitchers[0]?.ovr??myPitOvr;
+  const displayOppPitOvr=oppPitchers[0]?.ovr??oppPitOvr;
+
+  gs={inning:1,half:'top',outs:0,bases:[null,null,null],scores:[0,0],done:false,opp,
     myStr:Math.min(99,myBatOvr),       // 我方打線
-    myPitStr:Math.min(99,myPitOvr),    // 我方投手（顯示用）
-    oppBatOvr,oppPitOvr,               // 對手打線/投手
+    myPitStr:Math.min(99,displayMyPitOvr),    // 我方本場先發（顯示用）
+    oppBatOvr,
+    oppPitOvr:Math.min(99,displayOppPitOvr),  // 對手本場先發（顯示用）
     myBatters,myBatterIdx:0,
     oppBatters,oppBatterIdx:0,
+    myBench:myBenchProfiles,
+    oppBench:oppBenchProfiles,
+    oppRotation:oppRoster.rotation,
+    oppBullpen:oppRoster.bullpen,
     myPitchers,myPitIdx:0,
     oppPitchers,oppPitIdx:0,
     stats:{myH:0,myHR:0,myK:0,myBB:0,oppH:0,oppHR:0,oppK:0,oppBB:0}};
   document.getElementById('gs-title').textContent='vs '+opp.name;
   document.getElementById('game-screen').classList.add('show');
   // 開場日誌顯示實際 OVR 對比
-  addGameLog(`⚾ 比賽開始！我方打線${myBatOvr} / 投手${myPitOvr}  vs  對手${opp.str}`,'sys');
+  addGameLog(`⚾ 比賽開始！我方打線${myBatOvr} / 先發投手${displayMyPitOvr}  vs  對手打線${oppBatOvr} / 先發投手${displayOppPitOvr}`,'sys');
   updateGameUI();
 }
 function getCurPitcher(isTop){return isTop?(gs.oppPitchers[gs.oppPitIdx]||gs.oppPitchers[0]):(gs.myPitchers[gs.myPitIdx]||gs.myPitchers[0]);}
 function getCurBatter(isTop){if(isTop){if(!gs.myBatters.length)return null;return gs.myBatters[gs.myBatterIdx%gs.myBatters.length];}else{if(!gs.oppBatters.length)return null;return gs.oppBatters[gs.oppBatterIdx%gs.oppBatters.length];}}
+function clampRating(val,min=40,max=99){
+  return Math.max(min,Math.min(max,Math.round(val)));
+}
+function getOpponentYearPool(opp){
+  const exact=ALL_PLAYERS.filter(player=>player.nat===opp.flag&&player.year===opp.era);
+  if(exact.length)return exact;
+  const sameNation=ALL_PLAYERS
+    .filter(player=>player.nat===opp.flag)
+    .sort((a,b)=>
+      Math.abs((a.year??opp.era)-opp.era)-Math.abs((b.year??opp.era)-opp.era)||
+      b.ovr-a.ovr
+    );
+  const fallbackYear=sameNation[0]?.year;
+  return fallbackYear==null?sameNation:sameNation.filter(player=>player.year===fallbackYear);
+}
+function buildBatterProfile({name,pos='',ovr=72,player=null,slotIndex=0}){
+  if(player){
+    const contact=getAbilityValue(player,0)||ovr;
+    const power=getAbilityValue(player,1)||ovr;
+    const eye=getAbilityValue(player,2)||ovr;
+    const speed=getAbilityValue(player,3)||ovr;
+    const mental=getAbilityValue(player,5)||ovr;
+    return {
+      name,pos,ovr,
+      contact,power,eye,speed,mental,
+      atBatOvr:clampRating(ovr*.58+contact*.2+power*.08+eye*.08+mental*.06),
+      ab:0,h:0,hr:0,rbi:0
+    };
+  }
+  const slotMods=[
+    {contact:4,power:2,eye:4,speed:3,mental:2},
+    {contact:3,power:1,eye:2,speed:4,mental:1},
+    {contact:5,power:5,eye:2,speed:0,mental:3},
+    {contact:2,power:7,eye:1,speed:-1,mental:3},
+    {contact:1,power:4,eye:0,speed:-1,mental:1},
+    {contact:0,power:1,eye:0,speed:0,mental:0},
+    {contact:-1,power:0,eye:-1,speed:1,mental:0},
+    {contact:-2,power:-1,eye:-1,speed:1,mental:-1},
+    {contact:-3,power:-2,eye:-2,speed:0,mental:-1},
+  ][slotIndex]||{contact:0,power:0,eye:0,speed:0,mental:0};
+  const contact=clampRating(ovr+slotMods.contact);
+  const power=clampRating(ovr+slotMods.power);
+  const eye=clampRating(ovr+slotMods.eye);
+  const speed=clampRating(ovr+slotMods.speed);
+  const mental=clampRating(ovr+slotMods.mental);
+  return {
+    name,pos,ovr,
+    contact,power,eye,speed,mental,
+    atBatOvr:clampRating(ovr*.64+contact*.16+power*.08+eye*.07+mental*.05),
+    ab:0,h:0,hr:0,rbi:0
+  };
+}
+function buildPitcherProfile({name,ovr=75,type='SP',player=null}){
+  const stuff=player?(getAbilityValue(player,0)||ovr):clampRating(ovr+3);
+  const control=player?(getAbilityValue(player,1)||ovr):clampRating(ovr);
+  const breakBall=player?(getAbilityValue(player,2)||ovr):clampRating(ovr+1);
+  const mental=player?(getAbilityValue(player,4)||ovr):clampRating(ovr);
+  return {
+    name,ovr,stamina:100,type,
+    stuff,control,breakBall,mental
+  };
+}
+function buildOpponentTeamFromYear(opp){
+  const pool=getOpponentYearPool(opp);
+  const batters=pool
+    .filter(player=>!isPitcherPlayer(player))
+    .sort((a,b)=>b.ovr-a.ovr||cleanName(a.name).localeCompare(cleanName(b.name),'zh-Hant'));
+  const pitchers=pool
+    .filter(player=>isPitcherPlayer(player))
+    .sort((a,b)=>b.ovr-a.ovr||cleanName(a.name).localeCompare(cleanName(b.name),'zh-Hant'));
+  const starters=Array(9).fill(null);
+  const bench=[];
+  const usedBatters=new Set();
+  const desiredStarterSlots=['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+  const getDefenseFitScore=(player,slotPos)=>{
+    if(slotPos==='DH')return hasPos(player,'DH')?3:1;
+    if(hasPos(player,slotPos))return 4;
+    if(['LF','CF','RF'].includes(slotPos)&&hasPos(player,'OF'))return 3;
+    if(['LF','RF'].includes(slotPos)&&['LF','RF'].some(pos=>hasPos(player,pos)))return 2;
+    if(slotPos==='CF'&&['LF','RF'].some(pos=>hasPos(player,pos)))return 1;
+    return 0;
+  };
+  const takeBatter=(predicate,slotPos=null)=>{
+    const candidate=batters
+      .filter(player=>!usedBatters.has(getPlayerKey(player)))
+      .filter(predicate)
+      .sort((a,b)=>{
+        const fitDiff=slotPos?getDefenseFitScore(b,slotPos)-getDefenseFitScore(a,slotPos):0;
+        if(fitDiff!==0)return fitDiff;
+        const versatilityDiff=posArr(a).length-posArr(b).length;
+        if(versatilityDiff!==0)return versatilityDiff;
+        return b.ovr-a.ovr;
+      })[0];
+    if(candidate)usedBatters.add(getPlayerKey(candidate));
+    return candidate||null;
+  };
+  const fillStarterSlot=(slotPos)=>{
+    if(slotPos==='DH'){
+      return takeBatter(player=>hasPos(player,'DH'),slotPos)
+        || takeBatter(player=>['1B','LF','RF','OF'].some(pos=>hasPos(player,pos)),slotPos)
+        || takeBatter(()=>true,slotPos);
+    }
+    if(['LF','CF','RF'].includes(slotPos)){
+      return takeBatter(player=>hasPos(player,slotPos),slotPos)
+        || takeBatter(player=>hasPos(player,'OF'),slotPos)
+        || takeBatter(player=>['LF','CF','RF'].some(pos=>hasPos(player,pos)),slotPos)
+        || takeBatter(()=>true,slotPos);
+    }
+    return takeBatter(player=>hasPos(player,slotPos),slotPos)
+      || takeBatter(()=>true,slotPos);
+  };
+  desiredStarterSlots.forEach((slotPos,i)=>{starters[i]=fillStarterSlot(slotPos);});
+  batters
+    .filter(player=>!usedBatters.has(getPlayerKey(player)))
+    .forEach(player=>bench.push(player));
+
+  const rotation=[];
+  const bullpen=[];
+  const cps=pitchers.filter(player=>hasPos(player,'CP'));
+  const rps=pitchers.filter(player=>hasPos(player,'RP'));
+  const sps=pitchers.filter(player=>hasPos(player,'SP')||(!hasPos(player,'RP')&&!hasPos(player,'CP')&&player.pit));
+  const otherPitchers=pitchers.filter(player=>!hasPos(player,'SP')&&!hasPos(player,'RP')&&!hasPos(player,'CP'));
+  const usedPitchers=new Set();
+  const addPitcher=(list,player)=>{
+    if(!player)return false;
+    const key=getPlayerKey(player);
+    if(usedPitchers.has(key))return false;
+    usedPitchers.add(key);
+    list.push(player);
+    return true;
+  };
+  sps.forEach(player=>{ if(rotation.length<5)addPitcher(rotation,player); });
+  otherPitchers.forEach(player=>{ if(rotation.length<5)addPitcher(rotation,player); });
+  cps.forEach(player=>{ if(bullpen.length<9)addPitcher(bullpen,player); });
+  rps.forEach(player=>{ if(bullpen.length<9)addPitcher(bullpen,player); });
+  otherPitchers.forEach(player=>{ if(bullpen.length<9)addPitcher(bullpen,player); });
+  sps.forEach(player=>{ if(bullpen.length<9)addPitcher(bullpen,player); });
+  pitchers.forEach(player=>{
+    if(rotation.length<5)addPitcher(rotation,player);
+    else if(bullpen.length<9)addPitcher(bullpen,player);
+  });
+  return {
+    starters:starters.filter(Boolean),
+    bench,
+    rotation,
+    bullpen,
+    batters,
+    pitchers,
+  };
+}
 function updateGameUI(){
   const isTop=gs.half==='top';
   const pitcher=getCurPitcher(isTop);
@@ -2045,40 +2307,204 @@ function updateGameUI(){
 function calcMatchSig(){
   const isTop=gs.half==='top';
   const pitcher=getCurPitcher(isTop);
-  const batOvr=isTop?gs.myStr:gs.oppBatOvr;
+  const batter=getCurBatter(isTop);
+  const batOvr=batter?.atBatOvr??(isTop?gs.myStr:gs.oppBatOvr);
   const pitOvr=pitcher.ovr;
-  const staminaBonus=(100-pitcher.stamina)*0.003;
-  const rawDiff=(batOvr-pitOvr+staminaBonus*100)/100;
+  const contactEdge=((batter?.contact??batOvr)-(pitcher?.stuff??pitOvr))*0.12;
+  const disciplineEdge=((batter?.eye??batOvr)-(pitcher?.control??pitOvr))*0.1;
+  const mentalEdge=((batter?.mental??batOvr)-(pitcher?.mental??pitOvr))*0.05;
+  const staminaBonus=(100-pitcher.stamina)*0.22;
+  const rawDiff=(batOvr-pitOvr+contactEdge+disciplineEdge+mentalEdge+staminaBonus)/100;
   const sig=1/(1+Math.exp(-rawDiff*2.5));
-  return {sig,batOvr,pitOvr,pitcher};
+  return {sig,batOvr,pitOvr,pitcher,batter};
 }
 function updateFormula(){
-  const {sig,batOvr,pitOvr}=calcMatchSig();
-  const hitRate=Math.round(sig*38+4);
-  const hrRate=Math.max(1,Math.round(sig*9+0.5));
-  const kRate=Math.max(8,Math.round((1-sig)*38+6));
+  const {sig,batOvr,pitOvr,batter}=calcMatchSig();
+  const hitRate=Math.round(sig*30+6+((batter?.contact??70)-70)*0.06);
+  const hrRate=Math.max(1,Math.round(sig*6+((batter?.power??70)-70)*0.035));
+  const kRate=Math.max(10,Math.round((1-sig)*34+10-((batter?.eye??70)-70)*0.04));
   const f=document.getElementById('gs-formula');if(!f)return;
   const diff=batOvr-pitOvr;
   const adv=diff>0?`<span style="color:#4adb6a;font-size:9px">▲${diff}</span>`
             :diff<0?`<span style="color:#f06070;font-size:9px">▼${Math.abs(diff)}</span>`
             :`<span style="color:#d4a017;font-size:9px">均衡</span>`;
-  f.innerHTML=`<div class="gf-i"><div class="gf-l">投手OVR</div><div class="gf-v" style="color:#e05060">${pitOvr}</div></div><div class="gf-s">vs</div><div class="gf-i"><div class="gf-l">打線OVR</div><div class="gf-v" style="color:#d4a017">${batOvr}</div></div><div class="gf-s">${adv}</div><div class="gf-i"><div class="gf-l">安打率</div><div class="gf-v" style="color:#6adb6a">${hitRate}%</div></div><div class="gf-s">|</div><div class="gf-i"><div class="gf-l">HR率</div><div class="gf-v" style="color:#f0c030">${hrRate}%</div></div><div class="gf-s">|</div><div class="gf-i"><div class="gf-l">三振率</div><div class="gf-v" style="color:#cc88ff">${kRate}%</div></div>`;
+  f.innerHTML=`<div class="gf-i"><div class="gf-l">投手OVR</div><div class="gf-v" style="color:#e05060">${pitOvr}</div></div><div class="gf-s">vs</div><div class="gf-i"><div class="gf-l">打者OVR</div><div class="gf-v" style="color:#d4a017">${batOvr}</div></div><div class="gf-s">${adv}</div><div class="gf-i"><div class="gf-l">安打率</div><div class="gf-v" style="color:#6adb6a">${hitRate}%</div></div><div class="gf-s">|</div><div class="gf-i"><div class="gf-l">HR率</div><div class="gf-v" style="color:#f0c030">${hrRate}%</div></div><div class="gf-s">|</div><div class="gf-i"><div class="gf-l">三振率</div><div class="gf-v" style="color:#cc88ff">${kRate}%</div></div>`;
+}
+function getOffenseBench(isTop){
+  return isTop?gs.myBench:gs.oppBench;
+}
+function getOffenseBatters(isTop){
+  return isTop?gs.myBatters:gs.oppBatters;
+}
+function getOffenseScore(isTop){
+  return gs.scores[isTop?0:1];
+}
+function getDefenseScore(isTop){
+  return gs.scores[isTop?1:0];
+}
+function advanceRunnersOnOut({allowSecondToThird=false,allowThirdToHome=false}={}){
+  const nextBases=[null,null,null];
+  let scored=0;
+  if(gs.bases[2]){
+    if(allowThirdToHome){
+      scored++;
+    }else{
+      nextBases[2]=gs.bases[2];
+    }
+  }
+  if(gs.bases[1]){
+    if(!nextBases[2]&&allowSecondToThird)nextBases[2]=gs.bases[1];
+    else nextBases[1]=gs.bases[1];
+  }
+  if(gs.bases[0]){
+    nextBases[0]=gs.bases[0];
+  }
+  gs.bases=nextBases;
+  return scored;
+}
+function resolveGroundOut(){
+  let scored=0;
+  const runnerOnFirst=gs.bases[0];
+  const runnerOnSecond=gs.bases[1];
+  const runnerOnThird=gs.bases[2];
+  gs.outs++;
+  const nextBases=[null,null,null];
+  if(runnerOnThird){
+    if(gs.outs<3&&runnerOnFirst&&Math.random()<0.12){
+      scored++;
+    }else{
+      nextBases[2]=runnerOnThird;
+    }
+  }
+  if(runnerOnSecond){
+    if(gs.outs<3&&Math.random()<0.35&&!nextBases[2])nextBases[2]=runnerOnSecond;
+    else nextBases[1]=runnerOnSecond;
+  }
+  if(runnerOnFirst){
+    if(gs.outs<3&&!nextBases[1])nextBases[1]=runnerOnFirst;
+    else if(gs.outs<3&&!nextBases[2])nextBases[2]=runnerOnFirst;
+  }
+  gs.bases=nextBases;
+  return {scored};
+}
+function resolveDoublePlay(){
+  const runnerOnFirst=gs.bases[0];
+  if(!runnerOnFirst||gs.outs>=2){
+    const result=resolveGroundOut();
+    return {scored:result.scored};
+  }
+  const nextBases=[null,null,null];
+  let scored=0;
+  if(gs.bases[2]){
+    if(gs.bases[1]&&Math.random()<0.18){
+      scored++;
+    }else{
+      nextBases[2]=gs.bases[2];
+    }
+  }
+  if(gs.bases[1]){
+    nextBases[2]=gs.bases[1];
+  }
+  gs.outs+=2;
+  gs.bases=nextBases;
+  return {scored};
+}
+function resolveSacrificeBunt(){
+  gs.outs++;
+  let scored=0;
+  const nextBases=[null,null,null];
+  const buntScores=!!gs.bases[2]&&Math.random()<0.18;
+  if(buntScores){
+    scored++;
+  }else if(gs.bases[2]){
+    nextBases[2]=gs.bases[2];
+  }
+  if(gs.bases[1]){
+    if(!nextBases[2])nextBases[2]=gs.bases[1];
+    else nextBases[1]=gs.bases[1];
+  }
+  if(gs.bases[0]){
+    if(!nextBases[1])nextBases[1]=gs.bases[0];
+    else if(!nextBases[2])nextBases[2]=gs.bases[0];
+    else nextBases[0]=gs.bases[0];
+  }
+  gs.bases=nextBases;
+  return {scored};
+}
+function maybePinchHit(isTop){
+  if(gs.inning<8)return null;
+  const bench=getOffenseBench(isTop);
+  if(!bench?.length)return null;
+  const batters=getOffenseBatters(isTop);
+  const idx=isTop?(gs.myBatterIdx%batters.length):(gs.oppBatterIdx%batters.length);
+  const current=batters[idx];
+  if(!current)return null;
+  const scoreDiff=getOffenseScore(isTop)-getDefenseScore(isTop);
+  const lateCloseGame=Math.abs(scoreDiff)<=2;
+  const tyingOrGoAheadChance=(scoreDiff<=0)&&!!(gs.bases[1]||gs.bases[2]);
+  const lastCall=gs.inning>=9&&scoreDiff<0;
+  if(!lateCloseGame)return null;
+  if(!tyingOrGoAheadChance&&!lastCall)return null;
+  if(gs.outs===2&&!gs.bases[0]&&!gs.bases[1]&&!gs.bases[2])return null;
+  const candidate=bench
+    .filter(player=>player.atBatOvr>current.atBatOvr+5)
+    .sort((a,b)=>
+      (b.atBatOvr-a.atBatOvr)||
+      (b.power+b.contact)-(a.power+a.contact)
+    )[0];
+  if(!candidate)return null;
+  bench.splice(bench.indexOf(candidate),1);
+  batters[idx]={...candidate,ab:current.ab,h:current.h,hr:current.hr,rbi:current.rbi,_pinchHit:true};
+  addGameLog(`🔁 ${isTop?'我方':'對方'}代打：${candidate.name} 上場`, 'sys');
+  return batters[idx];
+}
+function attemptSteal(isTop){
+  if(gs.outs>=2)return false;
+  const runnerOnFirst=gs.bases[0];
+  const runnerOnSecond=gs.bases[1];
+  const tryRunner=runnerOnSecond&&!gs.bases[2]
+    ?{runner:runnerOnSecond,from:1,to:2}
+    :(runnerOnFirst&&!gs.bases[1]?{runner:runnerOnFirst,from:0,to:1}:null);
+  if(!tryRunner?.runner)return false;
+  const speed=tryRunner.runner.speed??70;
+  const closeGame=Math.abs(getOffenseScore(isTop)-getDefenseScore(isTop))<=2;
+  const pressureBonus=closeGame?0.01:0;
+  const stealChance=Math.max(0.01,Math.min(0.16,0.025+(speed-70)*0.0022+pressureBonus));
+  if(Math.random()>=stealChance)return false;
+  const successRate=Math.max(0.52,Math.min(0.86,0.62+(speed-70)*0.0045));
+  if(Math.random()<successRate){
+    gs.bases[tryRunner.to]=tryRunner.runner;
+    gs.bases[tryRunner.from]=null;
+    addGameLog(`💨 ${tryRunner.runner.name} 盜壘成功！`, 'hit');
+  }else{
+    gs.bases[tryRunner.from]=null;
+    gs.outs++;
+    addGameLog(`🚫 ${tryRunner.runner.name} 盜壘失敗`, 'out');
+  }
+  return true;
 }
 
 function pickPlayAdvanced(){
-  const {sig}=calcMatchSig();
-  const hrW  = Math.max(0.005, sig*0.090-0.005);
-  const h3W  = Math.max(0.003, sig*0.060-0.005);
-  const h2W  = Math.max(0.020, sig*0.120+0.010);
-  const h1W  = Math.max(0.060, sig*0.240+0.020);
-  const bbW  = Math.max(0.030, sig*0.110+0.010);
-  const kW   = Math.max(0.060,(1-sig)*0.360+0.040);
-  const goW  = Math.max(0.040,(1-sig)*0.280+0.050);
-  const foW  = Math.max(0.040,(1-sig)*0.240+0.040);
-  const dpW  = Math.max(0.005,(1-sig)*0.080+0.005);
-  const total=hrW+h3W+h2W+h1W+bbW+kW+goW+foW+dpW;
-  const ws=[hrW,h3W,h2W,h1W,bbW,kW,goW,foW,dpW].map(w=>w/total);
-  const ts=['hr','h3','h2','h1','bb','k','go','fo','dp'];
+  const {sig,batter,pitcher}=calcMatchSig();
+  const powerAdj=((batter?.power??70)-(pitcher?.stuff??70))*0.0007;
+  const eyeAdj=((batter?.eye??70)-(pitcher?.control??70))*0.00055;
+  const speedAdj=((batter?.speed??70)-70)*0.00045;
+  const contactAdj=((batter?.contact??70)-70)*0.00065;
+  const mentalAdj=((batter?.mental??70)-(pitcher?.mental??70))*0.00025;
+  const shW  = gs.outs<2&&!!gs.bases[0] ? Math.max(0.0015,(1-sig)*0.011+0.0012-contactAdj*0.12) : 0;
+  const sfW  = gs.outs<2&&!!gs.bases[2] ? Math.max(0.004,sig*0.016+0.0025+powerAdj*0.18) : 0;
+  const hrW  = Math.max(0.003, sig*0.060-0.006+powerAdj*0.9+mentalAdj);
+  const h3W  = Math.max(0.002, sig*0.018-0.003+speedAdj+contactAdj*0.22);
+  const h2W  = Math.max(0.016, sig*0.092+0.008+contactAdj*0.8+powerAdj*0.45+speedAdj*0.25);
+  const h1W  = Math.max(0.052, sig*0.182+0.022+contactAdj+speedAdj*0.32);
+  const bbW  = Math.max(0.022, sig*0.066+0.010+eyeAdj*0.95);
+  const kW   = Math.max(0.075,(1-sig)*0.355+0.072-eyeAdj-contactAdj*0.28);
+  const goW  = Math.max(0.052,(1-sig)*0.315+0.066-speedAdj*0.22);
+  const foW  = Math.max(0.048,(1-sig)*0.270+0.050-powerAdj*0.12);
+  const dpW  = gs.bases[0]&&gs.outs<2?Math.max(0.003,(1-sig)*0.038+0.0035-speedAdj*0.45):0;
+  const total=shW+sfW+hrW+h3W+h2W+h1W+bbW+kW+goW+foW+dpW;
+  const ws=[shW,sfW,hrW,h3W,h2W,h1W,bbW,kW,goW,foW,dpW].map(w=>w/total);
+  const ts=['sh','sf','hr','h3','h2','h1','bb','k','go','fo','dp'];
   let r=Math.random(),c=0;
   for(let i=0;i<ws.length;i++){c+=ws[i];if(r<c)return ts[i];}
   return 'go';
@@ -2086,35 +2512,84 @@ function pickPlayAdvanced(){
 function simNext(){
   if(!gs||gs.done)return;
   const isTop=gs.half==='top';
+  maybePinchHit(isTop);
+  if(attemptSteal(isTop)){
+    if(gs.outs>=3){
+      gs.outs=0;gs.bases=[null,null,null];
+      if(gs.half==='top'){
+        gs.half='bottom';
+        if(gs.inning>=9&&gs.scores[1]>gs.scores[0]){endGame();return;}
+        addGameLog(`━━ 第${gs.inning}局下半 ━━`,'sys');
+      }else{
+        if(gs.inning>=9&&gs.scores[0]!==gs.scores[1]){endGame();return;}
+        gs.inning++;
+        gs.half='top';
+        addGameLog(`━━ 第${gs.inning}局上半 ━━`,'sys');
+      }
+      document.getElementById('gs-inn').textContent='第'+gs.inning+'局'+(gs.half==='top'?'上':'下');
+    }
+    updateGameUI();
+    return;
+  }
   const t=pickPlayAdvanced();
-  const isOut=['k','go','fo','dp'].includes(t);
+  const isOut=['k','go','fo','dp','sh','sf'].includes(t);
   const batter=getCurBatter(isTop);
   const pitcher=getCurPitcher(isTop);
   let scored=0;
-  batter.ab++;
+  const countsAsAtBat=!['bb','sh','sf'].includes(t);
+  if(countsAsAtBat)batter.ab++;
   pitcher.stamina=Math.max(0,pitcher.stamina-(isOut?2:5));
-  const EMOJIS={hr:'💥',h3:'🔥',h2:'⚡',h1:'✅',bb:'🚶',k:'❌',go:'⬇️',fo:'🌀',dp:'💀'};
-  const TXTS={hr:'全壘打！',h3:'三壘安打',h2:'二壘安打',h1:'一壘安打',bb:'四壞球',k:'三振出局',go:'地滾出局',fo:'飛球出局',dp:'雙殺打'};
+  const EMOJIS={sh:'🪵',sf:'🎯',hr:'💥',h3:'🔥',h2:'⚡',h1:'✅',bb:'🚶',k:'❌',go:'⬇️',fo:'🌀',dp:'💀'};
+  const TXTS={sh:'犧牲短打',sf:'高飛犧牲打',hr:'全壘打！',h3:'三壘安打',h2:'二壘安打',h1:'一壘安打',bb:'四壞球',k:'三振出局',go:'地滾出局',fo:'飛球出局',dp:'雙殺打'};
   if(t==='k'){
     gs.outs++;
     if(isTop)gs.stats.oppK++;else gs.stats.myK++;
+  } else if(t==='sh'){
+    const result=resolveSacrificeBunt();
+    scored=result.scored;
+    batter.rbi+=scored;
+  } else if(t==='sf'){
+    gs.outs++;
+    if(gs.bases[2]){
+      scored++;
+      gs.bases[2]=null;
+    }
+    if(gs.bases[1]&&Math.random()<0.35){
+      gs.bases[2]=gs.bases[1];
+      gs.bases[1]=null;
+    }
+    batter.rbi+=scored;
   } else if(t==='go'){
-    gs.outs+=(gs.bases[0]&&gs.outs<2)?2:1;
-  } else if(t==='fo'||t==='dp'){
-    gs.outs+=(t==='dp'&&gs.bases[0]&&gs.outs<2)?2:1;
+    const result=resolveGroundOut();
+    scored=result.scored;
+    batter.rbi+=scored;
+  } else if(t==='fo'){
+    gs.outs++;
+    scored=advanceRunnersOnOut({allowSecondToThird:Math.random()<0.28});
+    batter.rbi+=scored;
+  } else if(t==='dp'){
+    const result=resolveDoublePlay();
+    scored=result.scored;
+    batter.rbi+=scored;
   } else if(t==='bb'){
     if(isTop)gs.stats.myBB++;else gs.stats.oppBB++;
     if(gs.bases[0]&&gs.bases[1]&&gs.bases[2])scored=1;
-    else if(gs.bases[0]&&gs.bases[1])gs.bases[2]=1;
-    else if(gs.bases[0])gs.bases[1]=1;
-    else gs.bases[0]=1;
+    if(gs.bases[1]&&gs.bases[0])gs.bases[2]=gs.bases[1];
+    if(gs.bases[0])gs.bases[1]=gs.bases[0];
+    gs.bases[0]={...batter};
+    batter.rbi+=scored;
   } else {
     batter.h++;
     if(isTop)gs.stats.myH++;else gs.stats.oppH++;
     const adv=t==='hr'?4:t==='h3'?3:t==='h2'?2:1;
     for(let i=2;i>=0;i--)if(gs.bases[i]&&i+adv>=3)scored++;
-    if(t==='hr'){scored++;gs.bases=[0,0,0];batter.hr++;if(isTop)gs.stats.myHR++;else gs.stats.oppHR++;}
-    else{const nb=[0,0,0];nb[adv-1]=1;for(let i=2;i>=0;i--)if(gs.bases[i]&&i+adv<3)nb[i+adv]=1;gs.bases=nb;}
+    if(t==='hr'){scored++;gs.bases=[null,null,null];batter.hr++;if(isTop)gs.stats.myHR++;else gs.stats.oppHR++;}
+    else{
+      const nb=[null,null,null];
+      nb[adv-1]={...batter};
+      for(let i=2;i>=0;i--)if(gs.bases[i]&&i+adv<3)nb[i+adv]=gs.bases[i];
+      gs.bases=nb;
+    }
     batter.rbi+=scored;
   }
   gs.scores[isTop?0:1]+=scored;
@@ -2123,22 +2598,35 @@ function simNext(){
   addGameLog(logTxt,t==='hr'?'hr':isOut?'out':'hit');
   document.getElementById('gs-s1').textContent=gs.scores[0];
   document.getElementById('gs-s2').textContent=gs.scores[1];
+  if(!isTop&&gs.inning>=9&&gs.scores[1]>gs.scores[0]){
+    endGame();
+    return;
+  }
   if(isTop)gs.myBatterIdx++;else gs.oppBatterIdx++;
   // 換投
   const pit=getCurPitcher(!isTop);
-  const pitArr=isTop?gs.myPitchers:gs.oppPitchers;
-  const pitIdxKey=isTop?'myPitIdx':'oppPitIdx';
+  const pitArr=isTop?gs.oppPitchers:gs.myPitchers;
+  const pitIdxKey=isTop?'oppPitIdx':'myPitIdx';
   if(pit.stamina<=15||(pit.type==='SP'&&gs.inning>=7&&pit.stamina<35)||(pit.type==='SP'&&gs.inning>=9)){
     if(gs[pitIdxKey]<pitArr.length-1){
       gs[pitIdxKey]++;
       const next=pitArr[gs[pitIdxKey]];
-      addGameLog(`🔄 ${isTop?'我方':'對方'}換投：${next.name}（${next.type}）`,'sys');
+      addGameLog(`🔄 ${isTop?'對方':'我方'}換投：${next.name}（${next.type}）`,'sys');
     }
   }
   if(gs.outs>=3){
-    gs.outs=0;gs.bases=[0,0,0];
-    if(gs.half==='top'){gs.half='bottom';addGameLog(`━━ 第${gs.inning}局下半 ━━`,'sys');}
-    else{gs.inning++;gs.half='top';if(gs.inning>9){endGame();return;}addGameLog(`━━ 第${gs.inning}局上半 ━━`,'sys');}
+    gs.outs=0;gs.bases=[null,null,null];
+    if(gs.half==='top'){
+      gs.half='bottom';
+      if(gs.inning>=9&&gs.scores[1]>gs.scores[0]){endGame();return;}
+      addGameLog(`━━ 第${gs.inning}局下半 ━━`,'sys');
+    }
+    else{
+      if(gs.inning>=9&&gs.scores[0]!==gs.scores[1]){endGame();return;}
+      gs.inning++;
+      gs.half='top';
+      addGameLog(`━━ 第${gs.inning}局上半 ━━`,'sys');
+    }
   }
   document.getElementById('gs-inn').textContent='第'+gs.inning+'局'+(gs.half==='top'?'上':'下');
   updateGameUI();
@@ -2164,7 +2652,7 @@ function endGame(){
   document.getElementById('gr-banner').className='gr-banner '+(win?'win':'loss');
   document.getElementById('gr-score').textContent=s1+' : '+s2;
   const{batBonus}=getCoachBonus();
-  document.getElementById('gr-stats').innerHTML=`<div class="gr-row"><span>對手</span><span class="gr-val">${gs.opp.name}</span></div><div class="gr-row"><span>比分</span><span class="gr-val">${s1} : ${s2}</span></div><div class="gr-row"><span>安打</span><span class="gr-val">${gs.stats.myH} : ${gs.stats.oppH}</span></div><div class="gr-row"><span>全壘打</span><span class="gr-val">${gs.stats.myHR} : ${gs.stats.oppHR}</span></div><div class="gr-row"><span>三振</span><span class="gr-val">${gs.stats.myK} : ${gs.stats.oppK}</span></div><div class="gr-row"><span>保送</span><span class="gr-val">${gs.stats.myBB} : ${gs.stats.oppBB}</span></div>${batBonus>0?'<div class="gr-row"><span>教練加成</span><span class="gr-val" style="color:#d4a017">+'+batBonus+'</span></div>':''}${dynastyFirstClear?'<div class="gr-row"><span>王朝首通</span><span class="gr-val" style="color:#7ce28c">+150 💎</span></div>':''}${totalReward>0?`<div class="gr-row"><span>比賽獎勵</span><span class="gr-val" style="color:#f0c030">+${totalReward} 💎</span></div>`:''}`;
+  document.getElementById('gr-stats').innerHTML=`<div class="gr-row"><span>對手</span><span class="gr-val">${gs.opp.name}</span></div><div class="gr-row"><span>比分</span><span class="gr-val">${s1} : ${s2}</span></div><div class="gr-row"><span>安打</span><span class="gr-val">${gs.stats.myH} : ${gs.stats.oppH}</span></div><div class="gr-row"><span>全壘打</span><span class="gr-val">${gs.stats.myHR} : ${gs.stats.oppHR}</span></div><div class="gr-row"><span>奪三振</span><span class="gr-val">${gs.stats.myK} : ${gs.stats.oppK}</span></div><div class="gr-row"><span>保送</span><span class="gr-val">${gs.stats.myBB} : ${gs.stats.oppBB}</span></div>${batBonus>0?'<div class="gr-row"><span>教練加成</span><span class="gr-val" style="color:#d4a017">+'+batBonus+'</span></div>':''}${dynastyFirstClear?'<div class="gr-row"><span>王朝首通</span><span class="gr-val" style="color:#7ce28c">+150 💎</span></div>':''}${totalReward>0?`<div class="gr-row"><span>比賽獎勵</span><span class="gr-val" style="color:#f0c030">+${totalReward} 💎</span></div>`:''}`;
   const box=document.getElementById('gr-box');
   if(box&&gs.myBatters){
     const rows=gs.myBatters.filter(b=>b.ab>0).map(b=>{

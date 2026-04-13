@@ -535,6 +535,25 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
 .opp-row:hover{border-color:#d4a017;transform:translateY(-1px)}.opp-flag{font-size:24px;flex-shrink:0}.opp-inf{flex:1}
 .opp-nm{font-size:12px;font-weight:700;color:var(--color-text-primary)}.opp-sb{font-size:10px;color:var(--color-text-tertiary);margin-top:1px}
 .opp-str{font-family:'Bebas Neue',cursive;font-size:22px;flex-shrink:0}.opp-arr{font-size:16px;color:var(--color-text-tertiary);flex-shrink:0}
+.opp-roster-box{margin-top:7px;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.65);border:1px solid rgba(0,0,0,.06)}
+.opp-roster-line{display:flex;align-items:flex-start;gap:6px}
+.opp-roster-tag{flex-shrink:0;font-size:8px;font-weight:700;letter-spacing:.08em;color:#8e6d18;background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.22);border-radius:999px;padding:2px 6px;line-height:1.2}
+.opp-roster-copy{font-size:9px;line-height:1.45;color:#5f5447}
+.opp-roster-meta{margin-top:5px;font-size:8px;color:#8d806d;letter-spacing:.03em}
+.opp-roster-toggle{margin-top:7px;padding:6px 10px;border:none;border-radius:999px;background:rgba(212,160,23,.14);color:#8e6d18;font-size:9px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif}
+.opp-roster-toggle.dynasty{background:rgba(240,192,48,.14);color:#f0c030}
+.opp-roster-detail{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(0,0,0,.09);display:flex;flex-direction:column;gap:7px}
+.opp-roster-sec{display:flex;flex-direction:column;gap:4px}
+.opp-roster-sec-title{font-size:8px;font-weight:700;letter-spacing:.08em;color:#8d806d}
+.opp-roster-list{display:flex;flex-wrap:wrap;gap:4px}
+.opp-roster-list span{font-size:8px;line-height:1.2;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.82);color:#5f5447;border:1px solid rgba(0,0,0,.05)}
+.dynasty-roster-box{margin-top:10px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.08)}
+.dynasty-roster-box .opp-roster-copy{color:rgba(255,255,255,.76)}
+.dynasty-roster-box .opp-roster-meta{color:rgba(255,255,255,.48)}
+.dynasty-roster-box .opp-roster-tag{background:rgba(240,192,48,.12);border-color:rgba(240,192,48,.24);color:#f0c030}
+.dynasty-roster-box .opp-roster-sec-title{color:rgba(255,255,255,.5)}
+.dynasty-roster-box .opp-roster-detail{border-top-color:rgba(255,255,255,.12)}
+.dynasty-roster-box .opp-roster-list span{background:rgba(255,255,255,.08);color:rgba(255,255,255,.78);border-color:rgba(255,255,255,.08)}
 .dynasty-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
 .dynasty-card{position:relative;padding:14px 12px 12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:
   linear-gradient(155deg,rgba(14,10,6,.96),rgba(34,24,13,.94)),
