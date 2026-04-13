@@ -23,13 +23,14 @@ const GameState={
   equippedCoaches:{},
   matchCount:0,
   clearedDynasties:[],
+  journeyProgress:{},
   scoutCandidates:[],
   naturalizedPlayers:[],
   scoutLevels:{s1:1,s2:1,s3:1},
   scoutDispatched:{},
 };
 // Proxy shortcuts for backward compatibility
-let gems,pity,myNation,myLegend,collection,lineup,battingOrder,bench,benchSlots,rotation,bullpen,bullpenSlots,ownedCoaches,equippedCoaches,matchCount,scoutCandidates,naturalizedPlayers,clearedDynasties;
+let gems,pity,myNation,myLegend,collection,lineup,battingOrder,bench,benchSlots,rotation,bullpen,bullpenSlots,ownedCoaches,equippedCoaches,matchCount,scoutCandidates,naturalizedPlayers,clearedDynasties,journeyProgress;
 let teamViewMode,teamSortMode,positionPenaltyEnabled;
 function syncFromState(){
   gems=GameState.gems;pity=GameState.pity;
@@ -43,6 +44,7 @@ function syncFromState(){
   equippedCoaches=GameState.equippedCoaches;
   matchCount=GameState.matchCount;
   clearedDynasties=GameState.clearedDynasties||[];
+  journeyProgress=GameState.journeyProgress||{};
   scoutCandidates=GameState.scoutCandidates;
   naturalizedPlayers=GameState.naturalizedPlayers;
   // 恢復各卡包保底計數
@@ -61,6 +63,7 @@ function syncToState(){
   GameState.equippedCoaches=equippedCoaches;
   GameState.matchCount=matchCount;
   GameState.clearedDynasties=clearedDynasties;
+  GameState.journeyProgress=journeyProgress;
   GameState.scoutCandidates=scoutCandidates;
   GameState.naturalizedPlayers=naturalizedPlayers;
   GameState.packPity={...packPity};
@@ -86,6 +89,7 @@ function buildSaveable(){
     myNation:GameState.myNation,myLegend:GameState.myLegend,
     ownedCoaches:GameState.ownedCoaches,equippedCoaches:GameState.equippedCoaches,matchCount:GameState.matchCount,
     clearedDynasties:GameState.clearedDynasties,
+    journeyProgress:GameState.journeyProgress,
     collection:GameState.collection.map(p=>({name:p.name,year:p.year??null,_naturalized:p._naturalized||false,_origNat:p._origNat||null})),
     lineup:GameState.lineup.map(p=>p?{name:p.name,year:p.year??null}:null),
     battingOrder:(GameState.battingOrder||[0,1,2,3,4,5,6,7,8]).slice(0,9),
@@ -115,6 +119,7 @@ function restoreSave(saved){
     if(cid&&!GameState.ownedCoaches.includes(cid))GameState.ownedCoaches.push(cid);
   });
   GameState.clearedDynasties=saved.clearedDynasties??[];
+  GameState.journeyProgress=saved.journeyProgress??{};
   // 向後相容：支援舊格式（string）和新格式（{name,year}）
   const restoreRef=s=>{
     if(!s)return null;
