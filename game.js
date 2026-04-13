@@ -792,16 +792,21 @@ function renderCollection(){
     ...NATIONS.map(n=>n.flag).filter(f=>nationFlags.includes(f)),
     ...nationFlags.filter(f=>!NATIONS.some(n=>n.flag===f)).sort(),
   ];
-  const subEl=document.getElementById('collection-page-sub');
-  const totalEl=document.getElementById('collection-page-total');
-  const nationEl=document.getElementById('collection-nation-count');
-  const hitterEl=document.getElementById('collection-hitter-count');
-  const pitcherEl=document.getElementById('collection-pitcher-count');
-  if(subEl)subEl.textContent=`已收集 ${ownedUnique.length} / ${allUnique.length} 張球員卡`;
-  if(totalEl)totalEl.textContent=ownedUnique.length;
-  if(nationEl)nationEl.textContent=ownNation.length;
-  if(hitterEl)hitterEl.textContent=hitters.length;
-  if(pitcherEl)pitcherEl.textContent=pitchers.length;
+  const allProgressLabelEl=document.getElementById('collection-all-progress-label');
+  const allProgressPctEl=document.getElementById('collection-all-progress-pct');
+  const allProgressFillEl=document.getElementById('collection-all-progress-fill');
+  const nationProgressLabelEl=document.getElementById('collection-nation-progress-label');
+  const nationProgressPctEl=document.getElementById('collection-nation-progress-pct');
+  const nationProgressFillEl=document.getElementById('collection-nation-progress-fill');
+  const allPct=allUnique.length?Math.min(100,Math.round(ownedUnique.length/allUnique.length*100)):0;
+  const nationTotal=myFlag?allUnique.filter(p=>p.nat===myFlag).length:0;
+  const nationPct=nationTotal?Math.min(100,Math.round(ownNation.length/nationTotal*100)):0;
+  if(allProgressLabelEl)allProgressLabelEl.textContent=`全部 ${ownedUnique.length} / ${allUnique.length}`;
+  if(allProgressPctEl)allProgressPctEl.textContent=`${allPct}%`;
+  if(allProgressFillEl)allProgressFillEl.style.width=`${allPct}%`;
+  if(nationProgressLabelEl)nationProgressLabelEl.textContent=`本國 ${ownNation.length} / ${nationTotal}`;
+  if(nationProgressPctEl)nationProgressPctEl.textContent=`${nationPct}%`;
+  if(nationProgressFillEl)nationProgressFillEl.style.width=`${nationPct}%`;
   const statusOptions=[
     {id:'all',label:'全部'},{id:'owned',label:'已收藏'},{id:'unowned',label:'未收藏'},
   ];

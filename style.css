@@ -160,15 +160,16 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
 .dr-claim{font-size:10px;font-weight:700;color:#1a3a1a;background:#4adb6a;border:none;border-radius:7px;padding:2px 7px;cursor:pointer;flex-shrink:0;font-family:'Noto Sans TC',sans-serif}
 /* ── 球員收藏頁 ── */
 .collection-page-head{margin:12px 14px 10px;padding:15px 15px 13px;border-radius:16px;border:.5px solid rgba(212,160,23,.18);background:radial-gradient(circle at top right,rgba(212,160,23,.12),transparent 34%),linear-gradient(180deg,#fffdfa 0%,#f8f3e8 100%);box-shadow:0 10px 24px rgba(61,42,8,.06)}
-.collection-page-kicker{font-family:'Bebas Neue',cursive;font-size:11px;letter-spacing:.16em;color:#b88c2a;line-height:1}
-.collection-page-title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:6px}
-.collection-page-title{font-family:'Bebas Neue',cursive;font-size:26px;color:#2a2316;line-height:1}
-.collection-page-sub{font-size:10px;color:#7b705f;margin-top:4px}
-.collection-page-total{font-family:'Bebas Neue',cursive;font-size:38px;line-height:1;color:#d4a017}
-.collection-page-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}
-.collection-page-stat{padding:9px 0 8px;border-radius:11px;background:linear-gradient(180deg,#fffdf8 0%,#f4eee1 100%);border:1px solid rgba(125,98,43,.08);text-align:center}
-.collection-page-stat-val{font-family:'Bebas Neue',cursive;font-size:20px;line-height:1;color:#2a2316}
-.collection-page-stat-lbl{font-size:8px;color:#8d806d;margin-top:3px;letter-spacing:.06em}
+.collection-page-bar{display:flex;flex-direction:column;gap:9px;padding:11px 12px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.82) 0%,rgba(244,238,225,.96) 100%);border:1px solid rgba(125,98,43,.08)}
+.collection-page-progress-row{display:flex;flex-direction:column;gap:5px}
+.collection-page-progress-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.collection-page-progress-label{font-size:9px;font-weight:700;color:#7b705f}
+.collection-page-progress-pct{font-size:10px;font-weight:700;color:#2f9e5b;flex-shrink:0}
+.collection-page-progress-pct.own{color:#d4a017}
+.collection-page-progress-track{height:7px;border-radius:999px;background:#e6efdf;overflow:hidden}
+.collection-page-progress-track.own{background:#f3ead5}
+.collection-page-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#3aa85d 0%,#71d18c 100%);transition:width .4s ease}
+.collection-page-progress-fill.own{background:linear-gradient(90deg,#c89211 0%,#f0c030 100%)}
 .collection-controls{position:relative;z-index:12;padding:0 14px 10px;overflow:visible}
 .collection-select-scroll{overflow-x:auto;overflow-y:visible;padding-bottom:2px}
 .collection-select-scroll::-webkit-scrollbar{display:none}
@@ -248,12 +249,12 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
 .hero-ring{position:absolute;inset:-2px;border-radius:11px;border:1.5px solid #f0c030;animation:breathe 2s ease-in-out infinite;pointer-events:none;z-index:3}
 .pull-again{padding:9px 22px;border-radius:8px;border:.5px solid #d4a017;background:rgba(212,160,23,.08);color:#f0c030;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif}
 .idle-hint{color:var(--color-text-tertiary);font-size:12px;padding:20px 0;text-align:center}
-.team-header{background:var(--color-background-primary);border-bottom:.5px solid var(--color-border-tertiary);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
-.team-header-stats{display:flex;gap:16px;align-items:center}
-.th-stat{text-align:center}.th-val{font-family:'Bebas Neue',cursive;font-size:18px;color:var(--color-text-primary)}.th-lbl{font-size:9px;color:var(--color-text-tertiary)}
+.team-header{background:var(--color-background-primary);border-bottom:.5px solid var(--color-border-tertiary);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0}
+.team-header-stats{display:flex;gap:18px;align-items:center}
+.th-stat{text-align:center}.th-val{font-family:'Bebas Neue',cursive;font-size:24px;color:var(--color-text-primary)}.th-lbl{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
 .team-header-summary{text-align:right;flex-shrink:0}
-.ths-val{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--color-text-primary);line-height:1}
-.ths-lbl{font-size:9px;color:var(--color-text-tertiary);margin-top:2px}
+.ths-val{font-family:'Bebas Neue',cursive;font-size:24px;color:var(--color-text-primary);line-height:1}
+.ths-lbl{font-size:10px;color:var(--color-text-tertiary);margin-top:3px}
 .pick-toolbar{display:flex;justify-content:flex-start;align-items:center;margin-bottom:8px}
 .team-view-wrap{position:relative;flex-shrink:0}
 .team-view-btn{min-width:58px;padding:6px 12px;border-radius:999px;border:1px solid rgba(212,160,23,.28);background:linear-gradient(180deg,#fffef8 0%,#f8f2e4 100%);color:#8e6d18;font-size:10px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;box-shadow:0 4px 10px rgba(0,0,0,.05)}
