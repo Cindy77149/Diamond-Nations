@@ -1,10 +1,22 @@
 let selEraIdx=5;
 let selMatchMode=null;
+let selJourneyView='eras'; // 'eras' | 'opps'
 let expandedMatchRosterKey=null;
 
 function resetMatchSetupView(){
   selMatchMode=null;
+  selJourneyView='eras';
   expandedMatchRosterKey=null;
+}
+function openJourneyEra(eraIdx){
+  selEraIdx=eraIdx;
+  selJourneyView='opps';
+  renderMatchSetup();
+}
+function backToJourneyEras(){
+  selJourneyView='eras';
+  expandedMatchRosterKey=null;
+  renderMatchSetup();
 }
 
 function getDynastyKey(opp){
@@ -88,27 +100,58 @@ function renderMatchSetup(){
   if(detail){
     detail.classList.toggle('has-mode',!!selMatchMode);
     if(selMatchMode==='journey'){
-      detail.innerHTML=`
-        <div class="match-detail-card">
-          <div class="match-detail-top">
-            <div>
-              <div class="match-detail-title">經典賽征途</div>
-              <div class="match-detail-sub">從年份節點一路推進，挑戰 ${n?n.name:'你的代表隊'} 的歷代經典對手。</div>
+      if(selJourneyView==='eras'){
+        const myNatFlagJ=n?n.flag:null;
+        const eraCards=PLAYABLE_WBC_ERAS.slice().sort((a,b)=>b.year-a.year).map((era,_si)=>{
+          const origIdx=PLAYABLE_WBC_ERAS.indexOf(era);
+          const allOpps=era.teams.filter(t=>!(myNatFlagJ&&t.flag===myNatFlagJ));
+          const total=allOpps.length;
+          const cleared=allOpps.filter(t=>getJourneyStars(t)>0).length;
+          const champTeam=era.teams.find(t=>t.champion);
+          const pct=total?Math.round(cleared/total*100):0;
+          const done=cleared===total&&total>0;
+          return `<button class="jec${done?' done':''}" type="button" onclick="openJourneyEra(${origIdx})">
+            <div class="jec-top">
+              <div class="jec-year">${era.year}</div>
+              <div class="jec-champ">${champTeam?.flag||'🏆'}</div>
             </div>
-            <button class="match-detail-close" type="button" onclick="setMatchMode('journey')">×</button>
-          </div>
-          <div class="match-section-head">
-            <span>年份節點</span>
-            <span class="match-section-note">選擇年份</span>
-          </div>
-          <div class="journey-rail" id="era-tabs"></div>
-          <div id="era-header"></div>
-          <div class="match-section-head">
-            <span>本屆強敵</span>
-            <span class="match-section-note" id="match-stage-note">逐一擊破，解鎖下一段征途</span>
-          </div>
-          <div class="opp-list" id="opp-list"></div>
-        </div>`;
+            <div class="jec-body">
+              <div class="jec-label">${era.label}</div>
+              <div class="jec-desc">${era.desc}</div>
+              <div class="jec-prog-row">
+                <div class="jec-prog-bar"><div class="jec-prog-fill" style="width:${pct}%"></div></div>
+                <div class="jec-prog-txt">${cleared}/${total} 隊</div>
+              </div>
+            </div>
+            <div class="jec-arr">›</div>
+          </button>`;
+        }).join('');
+        detail.innerHTML=`
+          <div class="match-detail-card">
+            <div class="match-detail-top">
+              <div>
+                <div class="match-detail-title">經典賽征途</div>
+                <div class="match-detail-sub">選擇年份，挑戰歷代 WBC 強敵</div>
+              </div>
+              <button class="match-detail-close" type="button" onclick="setMatchMode('journey')">×</button>
+            </div>
+            <div class="journey-era-grid">${eraCards}</div>
+          </div>`;
+      }else{
+        detail.innerHTML=`
+          <div class="match-detail-card">
+            <div class="match-detail-top">
+              <button class="jec-back" type="button" onclick="backToJourneyEras()">‹ 年份</button>
+              <button class="match-detail-close" type="button" onclick="setMatchMode('journey')">×</button>
+            </div>
+            <div id="era-header"></div>
+            <div class="match-section-head">
+              <span>本屆強敵</span>
+              <span class="match-section-note" id="match-stage-note"></span>
+            </div>
+            <div class="opp-list" id="opp-list"></div>
+          </div>`;
+      }
     }else if(selMatchMode==='dynasty'){
       detail.innerHTML=`
         <div class="match-detail-card">
@@ -142,23 +185,15 @@ function renderMatchSetup(){
     }
   }
   if(selEraIdx>=PLAYABLE_WBC_ERAS.length)selEraIdx=0;
-  const etabs=document.getElementById('era-tabs');
-  if(etabs){
-    etabs.innerHTML='';
-    PLAYABLE_WBC_ERAS.forEach((era,i)=>{
-      const btn=document.createElement('button');
-      btn.className='era-tab'+(i===selEraIdx?' active':'');
-      btn.innerHTML=`<div class="era-year">${era.year}</div><div class="era-champ-mini">${era.champion}</div><div class="era-copy">${era.desc}</div>`;
-      btn.onclick=()=>{selEraIdx=i;renderMatchSetup();};
-      etabs.appendChild(btn);
-    });
-  }
   const curEra=PLAYABLE_WBC_ERAS[selEraIdx];
   const champTeam=curEra?.teams.find(t=>t.champion);
-  const ehdr=document.getElementById('era-header');
-  if(ehdr&&curEra)ehdr.innerHTML=`<div class="era-header"><div class="era-champ-flag">${champTeam?champTeam.flag:'🏆'}</div><div class="era-info"><div class="era-title">${curEra.label}</div><div class="era-desc">${curEra.desc}</div>${champTeam&&champTeam.mvp?`<div class="era-mvp">🏅 當屆 MVP：${champTeam.mvp}</div>`:''}</div></div>`;
-  const stageNote=document.getElementById('match-stage-note');
-  if(stageNote&&curEra)stageNote.textContent=`${curEra.year} 年代表強隊，逐一挑戰並建立你的征服紀錄`;
+  // 只在 journey opps 視圖才渲染 era-header / stage-note
+  if(selMatchMode==='journey'&&selJourneyView==='opps'){
+    const ehdr=document.getElementById('era-header');
+    if(ehdr&&curEra)ehdr.innerHTML=`<div class="era-header"><div class="era-champ-flag">${champTeam?champTeam.flag:'🏆'}</div><div class="era-info"><div class="era-title">${curEra.label}</div><div class="era-desc">${curEra.desc}</div>${champTeam&&champTeam.mvp?`<div class="era-mvp">🏅 當屆 MVP：${champTeam.mvp}</div>`:''}</div></div>`;
+    const stageNote=document.getElementById('match-stage-note');
+    if(stageNote&&curEra)stageNote.textContent=`${curEra.year} 年代表強隊，逐一挑戰並建立你的征服紀錄`;
+  }
 
   const ol=document.getElementById('opp-list');
   if(ol&&curEra){

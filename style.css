@@ -644,6 +644,22 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
   .dynasty-status.cleared{top:46px}
 }
 /* 年份征途 */
+.journey-era-grid{display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-bottom:20px}
+.jec{background:linear-gradient(180deg,#fff,#f7f2ea);border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:14px 14px;text-align:left;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.05);transition:transform .15s,box-shadow .15s;width:100%;display:flex;align-items:center;gap:12px}
+.jec:hover{transform:translateY(-1px);box-shadow:0 8px 16px rgba(0,0,0,.09)}
+.jec.done{border-color:rgba(74,219,106,.28);box-shadow:0 4px 10px rgba(0,0,0,.05),0 0 0 1px rgba(74,219,106,.1) inset}
+.jec-top{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:56px}
+.jec-year{font-family:'Bebas Neue',cursive;font-size:26px;line-height:1;color:var(--color-text-primary)}
+.jec-champ{font-size:18px;line-height:1}
+.jec-body{flex:1;min-width:0}
+.jec-label{font-size:12px;font-weight:700;color:var(--color-text-primary);margin-bottom:3px}
+.jec-desc{font-size:10px;color:var(--color-text-tertiary);line-height:1.4;margin-bottom:7px}
+.jec-prog-row{display:flex;align-items:center;gap:6px}
+.jec-prog-bar{flex:1;height:4px;background:rgba(0,0,0,.08);border-radius:999px;overflow:hidden}
+.jec-prog-fill{height:100%;background:linear-gradient(90deg,#d4a017,#f0c030);border-radius:999px}
+.jec-prog-txt{font-size:9px;font-weight:700;color:var(--color-text-tertiary);white-space:nowrap}
+.jec-arr{font-size:18px;color:var(--color-text-tertiary);flex-shrink:0}
+.jec-back{font-size:13px;font-weight:700;color:rgba(255,255,255,.7);background:none;border:none;cursor:pointer;padding:0;line-height:1;font-family:'Noto Sans TC',sans-serif}
 .journey-rail{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;margin-bottom:12px}
 .journey-rail::-webkit-scrollbar{display:none}
 .era-tab{position:relative;flex-shrink:0;width:112px;padding:12px 12px 11px;border-radius:16px;border:1px solid rgba(0,0,0,.08);background:linear-gradient(180deg,#fff,#f7f2ea);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all .15s;text-align:left;box-shadow:0 10px 20px rgba(0,0,0,.06)}
