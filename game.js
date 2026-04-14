@@ -539,7 +539,7 @@ function goScreen(id){
 
 /* ═══ HOME ═══ */
 const BANNERS=[
-  {bg:'radial-gradient(ellipse at 28% 60%,#2a9a52 0%,transparent 54%),linear-gradient(150deg,#051e0e 0%,#0a3a1c 45%,#082814 100%)',icon:'🔥',tag:'限時活動',title:'限定卡包',sub:'2026 WBC 冠軍委內瑞拉限定 · HERO 5%',page:'gacha'},
+  {bg:'radial-gradient(ellipse at 28% 60%,#2a9a52 0%,transparent 54%),linear-gradient(150deg,#051e0e 0%,#0a3a1c 45%,#082814 100%)',icon:'🔥',tag:'招募中心',title:'招募球員',sub:'搜尋頂尖球員，打造你的最強陣容',page:'gacha'},
   {bg:'radial-gradient(ellipse at 30% 55%,#3a1e60 0%,transparent 52%),linear-gradient(150deg,#06040f 0%,#140a22 40%,#1e0e04 100%)',icon:'🏆',tag:'賽季模式',title:'WBC 2026',sub:'帶領你的國家征戰世界！',page:'match'},
   {bg:'radial-gradient(ellipse at 25% 60%,#6a3010 0%,transparent 50%),linear-gradient(150deg,#0e0704 0%,#241004 45%,#160c04 100%)',icon:'🧑‍🏫',tag:'教練系統',title:'招募教練',sub:'提升打擊・投手・守備・心理・調度',page:'coach'},
 ];
@@ -608,21 +608,62 @@ function toggleCollectionDropdown(key){
   wrap?.classList.add('open');
   const optionsWrap=document.getElementById('collection-picker-options');
   if(optionsWrap){
-    const frag=document.createDocumentFragment();
-    (collectionDropdownOptions[key]||[]).forEach(option=>{
-      const btn=document.createElement('button');
-      btn.type='button';
-      btn.className='collection-dropdown-opt'+(option.active?' active':'');
-      btn.textContent=option.label;
-      btn.onclick=()=>{
-        optionsWrap.querySelectorAll('.collection-dropdown-opt').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        option.onPick();
-      };
-      frag.appendChild(btn);
-    });
-    optionsWrap.innerHTML='';
-    optionsWrap.appendChild(frag);
+    function renderDropdownOptions(options){
+      const frag=document.createDocumentFragment();
+      options.forEach(option=>{
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='collection-dropdown-opt'+(option.active?' active':'');
+        btn.textContent=option.label;
+        if(option.children){
+          btn.classList.add('has-children');
+          btn.onclick=()=>{
+            optionsWrap.querySelectorAll('.collection-dropdown-opt').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            // 展開子選項
+            let sub=optionsWrap.querySelector('.collection-dropdown-sub');
+            if(sub)sub.remove();
+            sub=document.createElement('div');
+            sub.className='collection-dropdown-sub';
+            option.children.forEach(child=>{
+              const cbtn=document.createElement('button');
+              cbtn.type='button';
+              cbtn.className='collection-dropdown-opt sub'+(child.active?' active':'');
+              cbtn.textContent=child.label;
+              cbtn.onclick=()=>{
+                optionsWrap.querySelectorAll('.collection-dropdown-opt').forEach(b=>b.classList.remove('active'));
+                btn.classList.add('active');
+                cbtn.classList.add('active');
+                child.onPick();
+              };
+              sub.appendChild(cbtn);
+            });
+            btn.insertAdjacentElement('afterend',sub);
+          };
+        }else{
+          btn.onclick=()=>{
+            optionsWrap.querySelectorAll('.collection-dropdown-opt').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            option.onPick();
+          };
+        }
+        frag.appendChild(btn);
+      });
+      optionsWrap.innerHTML='';
+      optionsWrap.appendChild(frag);
+      // 若目前篩選值是子選項，自動展開父層
+      const cur=collectionTypeFilter;
+      if(key==='type'){
+        const parent=options.find(o=>o.children?.some(c=>c.id===cur));
+        if(parent){
+            const allParents=[...optionsWrap.querySelectorAll('.collection-dropdown-opt.has-children')];
+          allParents.forEach(pb=>{
+            if(pb.textContent===parent.label)pb.click();
+          });
+        }
+      }
+    }
+    renderDropdownOptions(collectionDropdownOptions[key]||[]);
   }
   if(overlay&&sheet&&wrap){
     const appRect=(document.querySelector('.app')||overlay).getBoundingClientRect();
@@ -670,33 +711,59 @@ function renderCollection(){
   if(nationProgressPctEl)nationProgressPctEl.textContent=`${nationPct}%`;
   if(nationProgressFillEl)nationProgressFillEl.style.width=`${nationPct}%`;
   const statusOptions=[
-    {id:'all',label:'全部'},{id:'owned',label:'已收藏'},{id:'unowned',label:'未收藏'},
+    {id:'all',label:'收藏'},{id:'owned',label:'已收藏'},{id:'unowned',label:'未收藏'},
   ];
-  const nationOptions=[{id:'all',label:'全部國家'},...orderedFlags.map(flag=>{
+  const nationOptions=[{id:'all',label:'國家'},...orderedFlags.map(flag=>{
     const nat=NATIONS.find(n=>n.flag===flag);
     return {id:flag,label:`${nat?.name||flag}`};
   })];
   const typeOptions=[
-    {id:'all',label:'全部'},{id:'hitters',label:'野手'},{id:'pitchers',label:'投手'},
+    {id:'all',label:'類型'},
+    {id:'hitters',label:'野手',children:[
+      {id:'C',label:'C'},
+      {id:'1B',label:'1B'},
+      {id:'2B',label:'2B'},
+      {id:'3B',label:'3B'},
+      {id:'SS',label:'SS'},
+      {id:'LF',label:'LF'},
+      {id:'CF',label:'CF'},
+      {id:'RF',label:'RF'},
+      {id:'OF',label:'OF'},
+    ]},
+    {id:'pitchers',label:'投手',children:[
+      {id:'SP',label:'SP'},
+      {id:'RP',label:'RP'},
+      {id:'CP',label:'CP'},
+    ]},
   ];
   const statusLabel=document.getElementById('collection-status-label');
   const nationLabel=document.getElementById('collection-nation-label');
   const typeLabel=document.getElementById('collection-type-label');
-  if(statusLabel)statusLabel.textContent=statusOptions.find(o=>o.id===collectionStatusFilter)?.label||'全部';
-  if(nationLabel)nationLabel.textContent=nationOptions.find(o=>o.id===collectionNationFilter)?.label||'全部國家';
-  if(typeLabel)typeLabel.textContent=typeOptions.find(o=>o.id===collectionTypeFilter)?.label||'全部';
+  if(statusLabel)statusLabel.textContent=statusOptions.find(o=>o.id===collectionStatusFilter)?.label||'收藏';
+  if(nationLabel)nationLabel.textContent=nationOptions.find(o=>o.id===collectionNationFilter)?.label||'國家';
+  if(typeLabel)typeLabel.textContent=typeOptions.find(o=>o.id===collectionTypeFilter)?.label||'類型';
   document.getElementById('collection-status-wrap')?.classList.toggle('active',collectionStatusFilter!=='all');
   document.getElementById('collection-nation-wrap')?.classList.toggle('active',collectionNationFilter!=='all');
   document.getElementById('collection-type-wrap')?.classList.toggle('active',collectionTypeFilter!=='all');
   collectionDropdownOptions.status=statusOptions.map(o=>({...o,active:collectionStatusFilter===o.id,onPick:()=>setCollectionStatusFilter(o.id)}));
   collectionDropdownOptions.nation=nationOptions.map(o=>({...o,active:collectionNationFilter===o.id,onPick:()=>setCollectionNationFilter(o.id)}));
-  collectionDropdownOptions.type=typeOptions.map(o=>({...o,active:collectionTypeFilter===o.id,onPick:()=>setCollectionTypeFilter(o.id)}));
+  collectionDropdownOptions.type=typeOptions.map(o=>({
+    ...o,
+    active:collectionTypeFilter===o.id,
+    onPick:()=>setCollectionTypeFilter(o.id),
+    children:o.children?.map(c=>({...c,active:collectionTypeFilter===c.id,onPick:()=>setCollectionTypeFilter(c.id)})),
+  }));
   let list=[...allUnique];
   if(collectionNationFilter!=='all')list=list.filter(p=>p.nat===collectionNationFilter);
   if(collectionStatusFilter==='owned')list=list.filter(p=>ownedKeys.has(getPlayerKey(p)));
   if(collectionStatusFilter==='unowned')list=list.filter(p=>!ownedKeys.has(getPlayerKey(p)));
   if(collectionTypeFilter==='hitters')list=list.filter(p=>!isPitcherPlayer(p));
-  if(collectionTypeFilter==='pitchers')list=list.filter(p=>isPitcherPlayer(p));
+  else if(['C','1B','2B','3B','SS','LF','CF','RF','OF'].includes(collectionTypeFilter))
+    list=list.filter(p=>!isPitcherPlayer(p)&&hasPos(p,collectionTypeFilter));
+  else if(collectionTypeFilter==='pitchers')list=list.filter(p=>isPitcherPlayer(p));
+  else if(collectionTypeFilter==='SP')list=list.filter(p=>hasPos(p,'SP')||(!hasPos(p,'RP')&&!hasPos(p,'CP')&&p.pit));
+  else if(collectionTypeFilter==='RP')list=list.filter(p=>hasPos(p,'RP'));
+  else if(collectionTypeFilter==='CP')list=list.filter(p=>hasPos(p,'CP'));
   list.sort((a,b)=>
     (ownedKeys.has(getPlayerKey(b))?1:0)-(ownedKeys.has(getPlayerKey(a))?1:0)||
     b.ovr-a.ovr||cleanName(a.name).localeCompare(cleanName(b.name),'zh-Hant')

@@ -150,7 +150,7 @@
 <!-- ── 球員收藏 ── -->
 <div class="screen" id="sc-collection">
   <div class="top-bar">
-    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">📚 球員收藏</div></div>
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title tb-title-match">球員收藏</div></div>
   </div>
   <div class="scroll">
     <div class="collection-page-head">
@@ -181,21 +181,21 @@
           <div class="collection-select-card" id="collection-status-wrap">
             <span class="collection-select-kicker">收藏</span>
             <button class="collection-select-btn" id="collection-status-btn" type="button" onclick="toggleCollectionDropdown('status')">
-              <span id="collection-status-label">全部</span>
+              <span id="collection-status-label">收藏</span>
             </button>
             <div class="collection-dropdown-menu" id="collection-status-menu"></div>
           </div>
           <div class="collection-select-card" id="collection-nation-wrap">
             <span class="collection-select-kicker">國家</span>
             <button class="collection-select-btn" id="collection-nation-btn" type="button" onclick="toggleCollectionDropdown('nation')">
-              <span id="collection-nation-label">全部國家</span>
+              <span id="collection-nation-label">國家</span>
             </button>
             <div class="collection-dropdown-menu" id="collection-nation-menu"></div>
           </div>
           <div class="collection-select-card" id="collection-type-wrap">
             <span class="collection-select-kicker">類型</span>
             <button class="collection-select-btn" id="collection-type-btn" type="button" onclick="toggleCollectionDropdown('type')">
-              <span id="collection-type-label">全部</span>
+              <span id="collection-type-label">類型</span>
             </button>
             <div class="collection-dropdown-menu" id="collection-type-menu"></div>
           </div>
@@ -214,13 +214,12 @@
 <!-- ── 抽卡 ── -->
 <div class="screen" id="sc-gacha">
   <div class="top-bar">
-    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">🔭 招募中心</div></div>
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title tb-title-match">招募中心</div></div>
     <div class="tw-chip">💎 <span class="tw-val" id="gem-gacha">3000</span></div>
   </div>
   <div class="scroll">
     <div class="recruit-page show" id="recruit-page-scout">
       <div class="scout-hero">
-        <div class="scout-hero-icon">🔭</div>
         <div class="scout-hero-inf">
           <div class="scout-hero-title">球探搜尋</div>
           <div class="scout-hero-sub">免費搜尋要等待時間，付鑽石可立即取得回報。</div>
@@ -360,7 +359,7 @@
 <!-- ── 比賽 ── -->
 <div class="screen" id="sc-match">
   <div class="top-bar">
-    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">🎮 比賽</div></div>
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title tb-title-match">🎮 比賽</div></div>
   </div>
   <div class="scroll">
     <div class="match-setup">
@@ -459,7 +458,7 @@
 <!-- ── 教練 ── -->
 <div class="screen" id="sc-coach">
   <div class="top-bar">
-    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title">🧑‍🏫 教練團</div></div>
+    <div style="display:flex;align-items:center;gap:10px"><button class="back-btn" onclick="goScreen('home')">‹</button><div class="tb-title tb-title-match">🧑‍🏫 教練團</div></div>
   </div>
   <div class="coach-header">
     <div class="coach-header-top">
