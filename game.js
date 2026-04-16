@@ -75,11 +75,13 @@ function getPlayerKey(player){
 
 function getPlayerPoseSrc(p){
   const ps=posArr(p);
-  if(ps.includes('C'))return 'pose_catcher.png';
-  if(isPitcherPlayer(p))return 'pose_pitcher.png';
-  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return 'pose_outfielder.png';
-  if(ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS'))return 'pose_infielder.png';
-  return 'pose_batter.png';
+  const isJP=p.nat==='🇯🇵';
+  const pre=isJP?'jp_':'pose_';
+  if(ps.includes('C'))return pre+'catcher.png';
+  if(isPitcherPlayer(p))return pre+'pitcher.png';
+  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return pre+'outfielder.png';
+  if(ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS'))return pre+'infielder.png';
+  return pre+'batter.png';
 }
 
 function buildPoseMiniCard(p,size='sm'){
