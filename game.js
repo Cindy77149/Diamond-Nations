@@ -73,27 +73,42 @@ function getPlayerKey(player){
   return `${player.name}|${player.year??''}`;
 }
 
+function getPlayerPoseSrc(p){
+  const ps=posArr(p);
+  if(ps.includes('C'))return 'pose_catcher.png';
+  if(isPitcherPlayer(p))return 'pose_pitcher.png';
+  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return 'pose_outfielder.png';
+  if(ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS'))return 'pose_infielder.png';
+  return 'pose_batter.png';
+}
+
 function buildPoseMiniCard(p,size='sm'){
   const rs=RAR[p.rar]||RAR.c;
-  const isH=p.rar==='h';
-  const isL=p.rar==='l';
-  const isR=p.rar==='r';
   const isX=p.rar==='x';
-  let avBg,avTopBg,avGlow;
-  if(isH){avBg='linear-gradient(145deg,#2a1500,#1a0a00)';avTopBg='linear-gradient(90deg,#b07010,#f8d050,#d4a017)';avGlow='0 0 12px rgba(212,160,23,.28)';}
-  else if(isL){avBg='linear-gradient(145deg,#150828,#0c0518)';avTopBg='linear-gradient(90deg,#6030b8,#cc88ff,#8a50d8)';avGlow='0 0 10px rgba(138,80,216,.24)';}
-  else if(isR){avBg='linear-gradient(145deg,#0a1428,#060c18)';avTopBg='linear-gradient(90deg,#3050a8,#7aaaff)';avGlow='0 0 8px rgba(74,106,204,.18)';}
-  else if(isX){avBg='linear-gradient(145deg,#faf6ee,#e8dcc8)';avTopBg='repeating-linear-gradient(90deg,#8b4513 0,#8b4513 3px,transparent 3px,transparent 6px)';avGlow='none';}
-  else{avBg='linear-gradient(145deg,#0d1a0d,#060f06)';avTopBg=rs.bd;avGlow='none';}
-  const poseSize=size==='lg'?34:28;
-  return `
-    <div class="pose-mini-card ${size}" style="background:${avBg};border:1.5px solid ${rs.bd};box-shadow:${avGlow}">
-      <div class="pose-mini-top" style="background:${avTopBg}"></div>
-      <div class="pose-mini-body">
-        ${getPoseSVG(p,poseSize)}
-      </div>
+  const src=getPlayerPoseSrc(p);
+  const isSm=size==='sm';
+  return `<div class="pcard ${size}" style="border-color:${rs.bd}">
+    <div class="pcard-bar" style="background:${rs.bd}"></div>
+    <div class="pcard-art"><img src="${src}" alt=""></div>
+    <div class="pcard-foot">
+      ${isSm
+        ? `<div class="pcard-foot-sm">
+             <span class="pcard-ovr" style="color:${rs.c}">${p.ovr}</span>
+             <span class="pcard-badge" style="background:${rs.bg};color:${rs.c};border:.5px solid ${rs.bd}">${isX?'RTR':rs.lbl}</span>
+           </div>`
+        : `<div class="pcard-foot-row">
+             <div class="pcard-name-block">
+               <div class="pcard-name">${cleanName(p.name)}</div>
+               <div class="pcard-pos" style="color:${rs.c}">${posStr(p)}</div>
+             </div>
+             <div class="pcard-ovr-block">
+               <div class="pcard-ovr" style="color:${rs.c}">${p.ovr}</div>
+               <div class="pcard-badge" style="background:${rs.bg};color:${rs.c};border:.5px solid ${rs.bd}">${isX?'RTR':rs.lbl}</div>
+             </div>
+           </div>`
+      }
     </div>
-  `;
+  </div>`;
 }
 
 function refreshTeamUI({save=false,switchTab=null}={}){
@@ -450,8 +465,9 @@ function renderUnpackCards(cards,{animated=true}={}){
     const delay=animated?i*.07:0;
     const animation=animated?`cardIn .35s ease ${delay}s both`:'none';
     const isX2=card.rar==='x';
-    c.style.cssText=`background:linear-gradient(180deg,#fffefa 0%,${isX2?'#f8efe3':'#f9f6f0'} 100%);border:2px solid ${rs.bd};animation:${animation};width:70px;opacity:1;transform:none;box-shadow:0 8px 16px rgba(0,0,0,.08)`;
-    c.innerHTML=`<div class="rc-top" style="background:${rs.bd}"></div><div class="rc-body"><div class="rc-av">${buildPoseMiniCard(card,'sm')}</div><div class="rc-pos" style="color:${rs.c}">${posStr(card)}</div></div><div class="rc-bot"><div class="rc-name">${cleanName(card.name)}</div><div class="rc-sub-row"><span class="rc-ovr" style="color:${rs.c}">${card.ovr}</span><span class="rc-sub" style="background:${rs.bg};color:${rs.c};border:1px solid ${rs.bd}">${isX2?'RETRO':rs.lbl}${card.year?'・'+card.year:''}</span></div></div>`;
+    const isH2=card.rar==='h';
+    c.style.cssText=`background:#0c1b2e;border:2px solid ${rs.bd};animation:${animation};width:70px;opacity:1;transform:none;box-shadow:${isH2?'0 0 10px rgba(212,160,23,.4)':'0 6px 16px rgba(0,0,0,.2)'}`;
+    c.innerHTML=`<div class="rc-top" style="background:${rs.bd}"></div><div class="rc-body"><img src="${getPlayerPoseSrc(card)}" style="width:100%;height:100%;object-fit:contain;display:block"></div><div class="rc-bot"><div class="rc-foot-row"><div class="rc-name-block"><div class="rc-name">${card.nat} ${cleanName(card.name)}</div><div class="rc-pos">${posStr(card)}${card.year?' · '+card.year:''}</div></div><div class="rc-ovr-block"><span class="rc-ovr" style="color:${rs.c}">${card.ovr}</span><span class="rc-sub" style="background:${rs.bg};color:${rs.c};border:.5px solid ${rs.bd}">${isX2?'RTR':rs.lbl}</span></div></div></div>`;
     outer.appendChild(c);container.appendChild(outer);
   });
 }
@@ -781,17 +797,20 @@ function renderCollection(){
     const card=document.createElement('div');
     card.className='collection-card'+(isOwned?'':' unowned');
     card.style.border=`2px solid ${rs.bd}`;
+    const isXc=p.rar==='x';
     card.innerHTML=`
       <div class="collection-card-top" style="background:${rs.bd}"></div>
       <div class="collection-card-body">
-        <div class="collection-card-pose">${buildPoseMiniCard(p,'lg')}</div>
+        <img src="${getPlayerPoseSrc(p)}" class="cc-img" alt="">
       </div>
       <div class="collection-card-foot">
-        <div class="collection-card-name">${p.nat} ${cleanName(p.name)}</div>
-        <div class="collection-card-meta">${posStr(p)} · ${p.year||''}</div>
-        <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
-          <span class="collection-card-badge" style="background:${rs.bg};color:${rs.c};border:.5px solid ${rs.bd}">${p.ovr} ${rs.lbl}</span>
-          ${isOwned?`<span class="collection-card-owned">已收藏</span>`:''}
+        <div class="cc-name-row">
+          <div class="collection-card-name">${p.nat} ${cleanName(p.name)}</div>
+          <span class="cc-ovr-num" style="color:${rs.c}">${p.ovr}</span>
+        </div>
+        <div class="cc-sub-row">
+          <span class="collection-card-meta">${posStr(p)}${p.year?' · '+p.year:''}</span>
+          <span class="cc-rar-tag" style="color:${rs.c};background:${rs.bg}">${isXc?'RTR':rs.lbl}</span>
         </div>
       </div>`;
     card.onclick=()=>openDetail(p.name,p.year??null);
@@ -948,16 +967,29 @@ function buildCardElement(card,large=false){
   const rs=RAR[card.rar]||RAR.r;
   const isH=card.rar==='h';const isX=card.rar==='x';const isL=card.rar==='l';
   const wrap=document.createElement('div');
-  wrap.style.cssText=`position:relative;width:${large?180:60}px;flex-shrink:0`;
+  wrap.style.cssText=`position:relative;width:${large?180:62}px;flex-shrink:0`;
   if(isH||isX){const gl=document.createElement('div');gl.className='hero-star-burst';wrap.appendChild(gl);for(let i=0;i<8;i++){const ray=document.createElement('div');ray.className='beam-ray';ray.style.transform=`rotate(${i*45}deg)`;wrap.appendChild(ray);}}
   else if(isL){const gl=document.createElement('div');gl.className='legend-glow-wrap';wrap.appendChild(gl);}
   const ce=document.createElement('div');
-  const bgStyle=`linear-gradient(180deg,#fffefa 0%,${isX?'#f8efe3':'#f9f6f0'} 100%)`;
-  const borderStyle=`2px solid ${rs.bd}`;
-  const boxShadow=isH?`0 0 ${large?16:8}px rgba(212,160,23,.24)`:isL?`0 0 ${large?14:6}px rgba(138,80,216,.2)`:isX?`0 0 ${large?10:5}px rgba(139,69,19,.14)`:`0 6px 14px rgba(0,0,0,.08)`;
-  ce.style.cssText=`background:${bgStyle};border:${borderStyle};box-shadow:${boxShadow};border-radius:${large?10:7}px;overflow:hidden;display:flex;flex-direction:column;width:100%;aspect-ratio:3/4.2;cursor:pointer`;
+  const boxShadow=isH?`0 0 ${large?24:10}px rgba(212,160,23,.5)`:isL?`0 0 ${large?20:8}px rgba(138,80,216,.45)`:isX?`0 0 ${large?14:6}px rgba(139,69,19,.3)`:`0 8px 20px rgba(0,0,0,.25)`;
+  ce.style.cssText=`background:#0c1b2e;border:${large?2:1.5}px solid ${rs.bd};box-shadow:${boxShadow};border-radius:${large?12:8}px;overflow:hidden;display:flex;flex-direction:column;width:100%;aspect-ratio:3/4.2;cursor:pointer`;
   const dn=cleanName(card.name);
-  ce.innerHTML=`<div style="height:${large?7:4}px;background:${rs.bd};flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${large?6:3}px;padding:${large?'10px 8px 8px':'6px 4px 4px'}"><div class="pull-pose-box ${large?'large':'small'}">${buildPoseMiniCard(card,large?'lg':'sm')}</div><div style="font-family:'Bebas Neue',cursive;font-size:${large?14:9}px;color:${rs.c};line-height:1;opacity:.9">${posStr(card)}</div></div><div style="padding:${large?'6px 8px 7px':'3px 4px 4px'};background:rgba(255,255,255,.8);border-top:1px solid rgba(0,0,0,.05);flex-shrink:0"><div style="font-family:'Bebas Neue',cursive;font-size:${large?12:8}px;color:#1f1b16;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${card.nat} ${dn}</div><div style="display:flex;align-items:center;justify-content:center;gap:${large?6:3}px;margin-top:2px"><span style="font-family:'Bebas Neue',cursive;font-size:${large?18:10}px;color:${rs.c};line-height:1">${card.ovr}</span><span style="font-size:${large?8:6}px;font-weight:700;padding:1px 3px;border-radius:3px;background:${rs.bg};color:${rs.c};border:1px solid ${rs.bd}">${isX?'RETRO':rs.lbl}${card.year?'・'+card.year:''}</span></div></div>`;
+  const src=getPlayerPoseSrc(card);
+  ce.innerHTML=`
+    <div style="height:${large?7:4}px;background:${rs.bd};flex-shrink:0"></div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:${large?'6px 4px 0':'2px 2px 0'}">
+      <img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block">
+    </div>
+    <div style="padding:${large?'7px 10px 9px':'3px 5px 5px'};background:rgba(255,255,255,.96);border-top:1px solid rgba(0,0,0,.06);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:${large?6:3}px">
+      <div style="flex:1;min-width:0;overflow:hidden">
+        <div style="font-size:${large?11:7.5}px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${card.nat} ${dn}</div>
+        <div style="font-size:${large?8:5.5}px;font-weight:600;color:${rs.c};line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${posStr(card)}${large&&card.year?' · '+card.year:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:${large?2:1}px">
+        <span style="font-family:'Bebas Neue',cursive;font-size:${large?26:12}px;color:${rs.c};line-height:1">${card.ovr}</span>
+        <span style="font-size:${large?7:5.5}px;font-weight:700;padding:1px ${large?5:3}px;border-radius:3px;background:${rs.bg};color:${rs.c};border:.5px solid ${rs.bd};white-space:nowrap">${isX?'RETRO':rs.lbl}</span>
+      </div>
+    </div>`;
   ce.onclick=()=>{closePullAnim();showDetail(card);};
   wrap.appendChild(ce);return wrap;
 }
@@ -1585,62 +1617,92 @@ function buildDetailSummaryHTML(player){
 }
 
 function getPoseSVG(p,size=44){
-  const c='rgba(255,255,255,0.18)';
   const ps=posArr(p);
   const isP=isPitcherPlayer(p);
-  const isSP=ps.includes('SP')||(isP&&!ps.includes('RP')&&!ps.includes('CP'));
-  const isRP=ps.includes('RP');
-  const isCP=ps.includes('CP');
   const isC=ps.includes('C');
   const isOF=ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF');
-  const s=size;const h=Math.round(s*0.28);const hw=Math.round(s*0.16);
-  const bx=Math.round(s/2);const by=Math.round(s*0.22);
-  let body='';
-  if(isCP||isRP){
-    // 後援：側投姿勢，腿弓步
-    body=`<ellipse cx="${bx}" cy="${by}" rx="${hw}" ry="${h*0.38}" fill="${c}"/>
-<line x1="${bx}" y1="${by+h*0.38}" x2="${bx}" y2="${Math.round(s*0.68)}" stroke="${c}" stroke-width="${Math.round(s*0.09)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.28)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.68)}" y2="${Math.round(s*0.88)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.5)}" x2="${Math.round(s*0.2)}" y2="${Math.round(s*0.65)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.5)}" x2="${Math.round(s*0.82)}" y2="${Math.round(s*0.42)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>`;
-  } else if(isSP){
-    // 先發：高舉投球臂
-    body=`<ellipse cx="${bx}" cy="${by}" rx="${hw}" ry="${h*0.38}" fill="${c}"/>
-<line x1="${bx}" y1="${by+h*0.38}" x2="${bx}" y2="${Math.round(s*0.68)}" stroke="${c}" stroke-width="${Math.round(s*0.09)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.35)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.65)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.5)}" x2="${Math.round(s*0.22)}" y2="${Math.round(s*0.38)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.5)}" x2="${Math.round(s*0.78)}" y2="${Math.round(s*0.6)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>`;
-  } else if(isC){
-    // 捕手：蹲低姿勢
-    body=`<ellipse cx="${bx}" cy="${by}" rx="${hw}" ry="${h*0.38}" fill="${c}"/>
-<line x1="${bx}" y1="${by+h*0.38}" x2="${bx}" y2="${Math.round(s*0.58)}" stroke="${c}" stroke-width="${Math.round(s*0.09)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.58)}" x2="${Math.round(s*0.28)}" y2="${Math.round(s*0.82)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${Math.round(s*0.28)}" y1="${Math.round(s*0.82)}" x2="${Math.round(s*0.22)}" y2="${Math.round(s*0.62)}" stroke="${c}" stroke-width="${Math.round(s*0.07)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.58)}" x2="${Math.round(s*0.72)}" y2="${Math.round(s*0.82)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${Math.round(s*0.72)}" y1="${Math.round(s*0.82)}" x2="${Math.round(s*0.78)}" y2="${Math.round(s*0.62)}" stroke="${c}" stroke-width="${Math.round(s*0.07)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.46)}" x2="${Math.round(s*0.2)}" y2="${Math.round(s*0.56)}" stroke="${c}" stroke-width="${Math.round(s*0.07)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.46)}" x2="${Math.round(s*0.8)}" y2="${Math.round(s*0.56)}" stroke="${c}" stroke-width="${Math.round(s*0.07)}" stroke-linecap="round"/>`;
+  const isIF=ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS');
+  let src;
+  if(isC)src='pose_catcher.png';
+  else if(isP)src='pose_pitcher.png';
+  else if(isOF)src='pose_outfielder.png';
+  else if(isIF)src='pose_infielder.png';
+  else src='pose_batter.png';
+  return `<img src="${src}" style="width:${size}px;height:${Math.round(size*1.4)}px;object-fit:contain;display:block;margin:0 auto;">`;
+}
+function _getPoseSVG_unused(p,size=44){
+  const ps=posArr(p);
+  const isP=isPitcherPlayer(p);
+  const isC=ps.includes('C');
+  const isOF=ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF');
+  const isIF=ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS');
+  const s=size;
+  const f=v=>Math.round(v*10)/10;
+  // Colors – Taiwan blue cartoon theme
+  const SK='#f5c09a';const UN='#2050c8';const CA='#153a96';
+  const GL='#c87820';const DK='#1a1a2e';const WH='#f0f4ff';
+  const RD='#cc2222';const BT='#7a3a10';
+  const cx=s*0.5;
+  const hR=s*0.175;          // head radius
+  const hCY=s*0.245;         // head centre Y
+  const bY1=hCY+hR*0.88;    // body top Y
+  const bY2=s*0.73;          // body bottom Y
+  const bW=s*0.165;          // body half-width
+  const lB=s*0.96;           // leg bottom Y
+  // ── Head & cap (shared) ──
+  const HEAD=`<circle cx="${f(cx)}" cy="${f(hCY)}" r="${f(hR)}" fill="${SK}"/>
+<path d="M${f(cx-hR*0.92)} ${f(hCY-hR*0.05)}A${f(hR*0.95)} ${f(hR*0.95)} 0 0 1 ${f(cx+hR*0.92)} ${f(hCY-hR*0.05)}Z" fill="${CA}"/>
+<ellipse cx="${f(cx+hR*0.72)}" cy="${f(hCY)}" rx="${f(hR*0.38)}" ry="${f(hR*0.15)}" fill="${CA}"/>
+<circle cx="${f(cx-hR*0.3)}" cy="${f(hCY+hR*0.12)}" r="${f(hR*0.11)}" fill="${DK}"/>
+<circle cx="${f(cx+hR*0.3)}" cy="${f(hCY+hR*0.12)}" r="${f(hR*0.11)}" fill="${DK}"/>`;
+  let BODY='';
+  if(isC){
+    // 捕手 ── 蹲低 + 護面罩
+    const sq1=bY1+s*0.02;const sq2=sq1+s*0.2;
+    BODY=`<rect x="${f(cx-hR*0.88)}" y="${f(hCY-hR*0.6)}" width="${f(hR*1.76)}" height="${f(hR*1.22)}" rx="${f(hR*0.28)}" fill="none" stroke="${RD}" stroke-width="${f(hR*0.2)}"/>
+<ellipse cx="${f(cx)}" cy="${f((sq1+sq2)/2)}" rx="${f(bW*1.08)}" ry="${f((sq2-sq1)/2)}" fill="${UN}"/>
+<line x1="${f(cx-bW*0.65)}" y1="${f(sq1+s*0.02)}" x2="${f(s*0.11)}" y2="${f(sq1+s*0.06)}" stroke="${SK}" stroke-width="${f(s*0.08)}" stroke-linecap="round"/>
+<circle cx="${f(s*0.1)}" cy="${f(sq1+s*0.07)}" r="${f(s*0.082)}" fill="${GL}"/>
+<line x1="${f(cx+bW*0.65)}" y1="${f(sq1+s*0.02)}" x2="${f(s*0.86)}" y2="${f(sq1+s*0.04)}" stroke="${SK}" stroke-width="${f(s*0.078)}" stroke-linecap="round"/>
+<line x1="${f(cx-bW*0.5)}" y1="${f(sq2)}" x2="${f(cx-bW*1.1)}" y2="${f(sq2+s*0.18)}" stroke="${UN}" stroke-width="${f(s*0.13)}" stroke-linecap="round"/>
+<line x1="${f(cx+bW*0.5)}" y1="${f(sq2)}" x2="${f(cx+bW*1.1)}" y2="${f(sq2+s*0.18)}" stroke="${UN}" stroke-width="${f(s*0.13)}" stroke-linecap="round"/>`;
+  } else if(isP){
+    // 投手 ── 大步跨出投球：右臂後舉持球，左臂前推手套，前腳跨大步
+    const midY=(bY1+bY2)/2;
+    BODY=`<ellipse cx="${f(cx-s*0.04)}" cy="${f(midY-s*0.02)}" rx="${f(bW*1.05)}" ry="${f((bY2-bY1)*0.48)}" fill="${UN}"/>
+<line x1="${f(cx+bW*0.4)}" y1="${f(bY1+s*0.06)}" x2="${f(s*0.86)}" y2="${f(hCY+s*0.06)}" stroke="${SK}" stroke-width="${f(s*0.092)}" stroke-linecap="round"/>
+<circle cx="${f(s*0.88)}" cy="${f(hCY+s*0.03)}" r="${f(s*0.075)}" fill="${WH}"/>
+<line x1="${f(cx-bW*0.4)}" y1="${f(bY1+s*0.08)}" x2="${f(s*0.1)}" y2="${f(bY1+s*0.04)}" stroke="${SK}" stroke-width="${f(s*0.088)}" stroke-linecap="round"/>
+<circle cx="${f(s*0.09)}" cy="${f(bY1+s*0.04)}" r="${f(s*0.096)}" fill="${GL}"/>
+<line x1="${f(cx-bW*0.5)}" y1="${f(bY2)}" x2="${f(s*0.1)}" y2="${f(lB)}" stroke="${UN}" stroke-width="${f(s*0.14)}" stroke-linecap="round"/>
+<line x1="${f(cx+bW*0.4)}" y1="${f(bY2)}" x2="${f(s*0.88)}" y2="${f(lB-s*0.04)}" stroke="${UN}" stroke-width="${f(s*0.14)}" stroke-linecap="round"/>`;
   } else if(isOF){
-    // 外野：張手接球姿勢
-    body=`<ellipse cx="${bx}" cy="${by}" rx="${hw}" ry="${h*0.38}" fill="${c}"/>
-<line x1="${bx}" y1="${by+h*0.38}" x2="${bx}" y2="${Math.round(s*0.68)}" stroke="${c}" stroke-width="${Math.round(s*0.09)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.35)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.65)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.48)}" x2="${Math.round(s*0.16)}" y2="${Math.round(s*0.38)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.48)}" x2="${Math.round(s*0.84)}" y2="${Math.round(s*0.38)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>`;
+    // 外野手 ── 右臂高舉接球
+    BODY=`<ellipse cx="${f(cx)}" cy="${f((bY1+bY2)/2)}" rx="${f(bW)}" ry="${f((bY2-bY1)/2)}" fill="${UN}"/>
+<line x1="${f(cx+bW*0.5)}" y1="${f(bY1+s*0.04)}" x2="${f(s*0.87)}" y2="${f(hCY+s*0.04)}" stroke="${SK}" stroke-width="${f(s*0.088)}" stroke-linecap="round"/>
+<circle cx="${f(s*0.87)}" cy="${f(hCY-s*0.01)}" r="${f(s*0.1)}" fill="${GL}"/>
+<line x1="${f(cx-bW*0.5)}" y1="${f(bY1+s*0.1)}" x2="${f(s*0.1)}" y2="${f(bY1+s*0.2)}" stroke="${SK}" stroke-width="${f(s*0.08)}" stroke-linecap="round"/>
+<line x1="${f(cx-bW*0.4)}" y1="${f(bY2)}" x2="${f(cx-bW*0.8)}" y2="${f(lB)}" stroke="${UN}" stroke-width="${f(s*0.12)}" stroke-linecap="round"/>
+<line x1="${f(cx+bW*0.4)}" y1="${f(bY2)}" x2="${f(cx+bW*0.8)}" y2="${f(lB)}" stroke="${UN}" stroke-width="${f(s*0.12)}" stroke-linecap="round"/>`;
+  } else if(isIF){
+    // 內野手 ── 低身接球姿勢，左手持手套向下
+    BODY=`<ellipse cx="${f(cx-s*0.03)}" cy="${f((bY1+bY2)/2+s*0.02)}" rx="${f(bW)}" ry="${f((bY2-bY1)/2)}" fill="${UN}"/>
+<line x1="${f(cx-bW*0.5)}" y1="${f(bY1+s*0.1)}" x2="${f(s*0.11)}" y2="${f(bY2-s*0.04)}" stroke="${SK}" stroke-width="${f(s*0.084)}" stroke-linecap="round"/>
+<circle cx="${f(s*0.1)}" cy="${f(bY2-s*0.02)}" r="${f(s*0.096)}" fill="${GL}"/>
+<line x1="${f(cx+bW*0.45)}" y1="${f(bY1+s*0.06)}" x2="${f(s*0.87)}" y2="${f(bY1+s*0.12)}" stroke="${SK}" stroke-width="${f(s*0.08)}" stroke-linecap="round"/>
+<line x1="${f(cx-bW*0.4)}" y1="${f(bY2)}" x2="${f(cx-bW*1.05)}" y2="${f(lB-s*0.02)}" stroke="${UN}" stroke-width="${f(s*0.13)}" stroke-linecap="round"/>
+<line x1="${f(cx+bW*0.35)}" y1="${f(bY2)}" x2="${f(cx+bW*0.95)}" y2="${f(lB-s*0.02)}" stroke="${UN}" stroke-width="${f(s*0.13)}" stroke-linecap="round"/>`;
   } else {
-    // 內野手/DH：揮棒姿勢（默認）
-    body=`<ellipse cx="${bx}" cy="${by}" rx="${hw}" ry="${h*0.38}" fill="${c}"/>
-<line x1="${bx}" y1="${by+h*0.38}" x2="${bx}" y2="${Math.round(s*0.68)}" stroke="${c}" stroke-width="${Math.round(s*0.09)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.35)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.68)}" x2="${Math.round(s*0.65)}" y2="${Math.round(s*0.95)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.5)}" x2="${Math.round(s*0.18)}" y2="${Math.round(s*0.52)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>
-<line x1="${Math.round(s*0.18)}" y1="${Math.round(s*0.52)}" x2="${Math.round(s*0.78)}" y2="${Math.round(s*0.44)}" stroke="${c}" stroke-width="${Math.round(s*0.07)}" stroke-linecap="round"/>
-<line x1="${bx}" y1="${Math.round(s*0.5)}" x2="${Math.round(s*0.82)}" y2="${Math.round(s*0.56)}" stroke="${c}" stroke-width="${Math.round(s*0.08)}" stroke-linecap="round"/>`;
+    // 打者/DH ── 揮棒預備姿勢
+    BODY=`<ellipse cx="${f(cx-s*0.03)}" cy="${f((bY1+bY2)/2)}" rx="${f(bW)}" ry="${f((bY2-bY1)/2)}" fill="${UN}"/>
+<line x1="${f(s*0.84)}" y1="${f(bY1-s*0.07)}" x2="${f(cx-s*0.04)}" y2="${f(bY1+s*0.22)}" stroke="${BT}" stroke-width="${f(s*0.082)}" stroke-linecap="round"/>
+<line x1="${f(cx+bW*0.5)}" y1="${f(bY1+s*0.04)}" x2="${f(s*0.83)}" y2="${f(bY1-s*0.04)}" stroke="${SK}" stroke-width="${f(s*0.088)}" stroke-linecap="round"/>
+<line x1="${f(cx-bW*0.45)}" y1="${f(bY1+s*0.1)}" x2="${f(s*0.11)}" y2="${f(bY1+s*0.18)}" stroke="${SK}" stroke-width="${f(s*0.08)}" stroke-linecap="round"/>
+<circle cx="${f(s*0.1)}" cy="${f(bY1+s*0.19)}" r="${f(s*0.086)}" fill="${GL}"/>
+<line x1="${f(cx-bW*0.45)}" y1="${f(bY2)}" x2="${f(cx-bW*1.1)}" y2="${f(lB)}" stroke="${UN}" stroke-width="${f(s*0.13)}" stroke-linecap="round"/>
+<line x1="${f(cx+bW*0.3)}" y1="${f(bY2)}" x2="${f(cx+bW*0.65)}" y2="${f(lB)}" stroke="${UN}" stroke-width="${f(s*0.13)}" stroke-linecap="round"/>`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">${body}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">${HEAD}${BODY}</svg>`;
 }
 
 function showDetail(p,context=null){
@@ -1691,12 +1753,11 @@ function showDetail(p,context=null){
       ?`<button class="ds-btn remove" onclick="window._removeFromTeam('${p.name}',${p.year??'null'})">從陣容移除</button>`
       :`<button class="ds-btn add" onclick="window._addFromDetail('${p.name}',${p.year??'null'})">加入陣容 ＋</button>`;
   const displayName=cardLabel(p);
-  let avBg,avGlow;
-  if(isH){avBg='linear-gradient(145deg,#2a1500,#1a0a00)';avGlow='0 0 16px rgba(212,160,23,.5)';}
-  else if(isL){avBg='linear-gradient(145deg,#150828,#0c0518)';avGlow='0 0 14px rgba(138,80,216,.4)';}
-  else if(isR2){avBg='linear-gradient(145deg,#0a1428,#060c18)';avGlow='0 0 8px rgba(74,106,204,.25)';}
-  else if(isRetro){avBg='linear-gradient(145deg,#faf6ee,#e8dcc8)';avGlow='none';}
-  else{avBg='linear-gradient(145deg,#0d1a0d,#060f06)';avGlow='none';}
+  let avGlow;
+  if(isH){avGlow='0 0 16px rgba(212,160,23,.5)';}
+  else if(isL){avGlow='0 0 14px rgba(138,80,216,.4)';}
+  else if(isR2){avGlow='0 0 8px rgba(74,106,204,.25)';}
+  else{avGlow='none';}
   const adv=calcAdvanced(p);
   const advHTML=buildAdvHTML(p,adv);
   const summaryHTML=buildDetailSummaryHTML(p,adv);
@@ -1707,9 +1768,10 @@ function showDetail(p,context=null){
       <span class="ds-rarity-sub">${rarAccentMap[p.rar]||rs.lbl}</span>
     </div>
     <div class="ds-head">
-      <div class="ds-av-card" style="background:${avBg};border:${isH?'2px':'1.5px'} solid ${rs.bd};box-shadow:${avGlow}">
+      <div class="ds-av-card" style="border-color:${rs.bd};box-shadow:${avGlow}">
+        <div class="ds-av-top" style="background:${rs.bd}"></div>
         <div class="ds-av-body">
-          ${getPoseSVG(p,42)}
+          <img src="${getPlayerPoseSrc(p)}" style="width:100%;height:100%;object-fit:contain;display:block">
         </div>
       </div>
       <div class="ds-inf">

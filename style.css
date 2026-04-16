@@ -481,11 +481,59 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
 .pick-card-top{height:4px;flex-shrink:0}
 .pick-card-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px 6px;cursor:pointer}
 .pick-card-av{width:44px;height:58px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pose-mini-card{overflow:hidden;display:flex;flex-direction:column;border-radius:9px;aspect-ratio:3/4.2;width:100%}
-.pose-mini-card.sm{width:34px}
-.pose-mini-card.lg{width:44px}
-.pose-mini-top{height:4px;flex-shrink:0}
-.pose-mini-body{flex:1;display:flex;align-items:center;justify-content:center;padding:4px}
+/* ── 卡牌重新設計 2.0 ── */
+.pcard{border-radius:8px;overflow:hidden;display:flex;flex-direction:column;border:1.5px solid #d4a017;background:#0c1b2e;aspect-ratio:3/4.2;flex-shrink:0;position:relative}
+.pcard.sm{width:34px;border-radius:7px}
+.pcard.lg{width:44px}
+.pcard-bar{height:3px;flex-shrink:0}
+.pcard-art{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:1px 1px 0}
+.pcard-art img{width:100%;height:100%;object-fit:contain;display:block}
+.pcard-foot{padding:2px 3px 3px;background:rgba(255,255,255,.95);flex-shrink:0}
+.pcard-foot-sm{display:flex;flex-direction:column;align-items:center;gap:1px}
+.pcard-foot-row{display:flex;align-items:center;justify-content:space-between;gap:2px}
+.pcard-name-block{flex:1;min-width:0;overflow:hidden}
+.pcard-name{font-size:6.5px;font-weight:700;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.pcard.lg .pcard-name{font-size:8.5px}
+.pcard-pos{font-size:5px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard.lg .pcard-pos{font-size:6.5px}
+.pcard-ovr-block{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:1px}
+.pcard-meta{display:flex;align-items:center;gap:2px;margin-top:1px}
+.pcard-ovr{font-family:'Bebas Neue',cursive;font-size:10px;line-height:1}
+.pcard.lg .pcard-ovr{font-size:13px}
+.pcard-badge{font-size:5px;font-weight:700;padding:0 2px;border-radius:2px;line-height:1.5}
+.pcard.lg .pcard-badge{font-size:6px}
+/* ── 圖鑑卡牌 ── */
+.collection-card{border-radius:12px;overflow:hidden;cursor:pointer;background:#0c1b2e;position:relative;transition:transform .15s}
+.collection-card:active{transform:scale(.97)}
+.collection-card.unowned{opacity:.38;filter:grayscale(.7)}
+.collection-card-top{height:5px;flex-shrink:0}
+.collection-card-body{padding:6px 6px 2px;display:flex;justify-content:center;align-items:center;background:#0c1b2e;min-height:92px}
+.cc-img{height:88px;object-fit:contain;display:block}
+.collection-card-foot{padding:5px 8px 7px;background:rgba(255,255,255,.96);border-top:.5px solid rgba(0,0,0,.05)}
+.cc-name-row{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px}
+.collection-card-name{font-size:10px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;flex:1;min-width:0}
+.cc-ovr-num{font-family:'Bebas Neue',cursive;font-size:15px;line-height:1;flex-shrink:0;transform:translateY(1.5px)}
+.cc-sub-row{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.collection-card-meta{font-size:7.5px;color:#888;line-height:1;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-rar-tag{display:inline-flex;align-items:center;font-family:'Bebas Neue',cursive;font-size:8px;padding:3px 4px 1px;border-radius:3px;line-height:1;flex-shrink:0;transform:translateY(1.5px)}
+/* ── 抽卡結果卡 ── */
+.rc{width:calc(33.3% - 5px);max-width:90px;aspect-ratio:3/4.2;border-radius:9px;overflow:hidden;display:flex;flex-direction:column;animation:cardIn .35s ease both;position:relative;cursor:pointer;background:#0c1b2e}
+.rc-top{height:4px;flex-shrink:0}
+.rc-body{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:2px 2px 0}
+.rc-bot{padding:3px 5px 4px;flex-shrink:0;background:rgba(255,255,255,.95);border-top:.5px solid rgba(0,0,0,.05)}
+.rc-foot-row{display:flex;align-items:center;justify-content:space-between;gap:2px}
+.rc-name-block{flex:1;min-width:0;overflow:hidden}
+.rc-name{font-size:8px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.rc-pos{font-size:6px;color:#888;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-ovr-block{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:1px}
+.rc-sub-row{display:flex;align-items:center;gap:3px;margin-top:1px}
+.rc-ovr{font-family:'Bebas Neue',cursive;font-size:13px;line-height:1}
+.rc-sub{font-size:6px;font-weight:700;padding:1px 3px;border-radius:3px}
+/* ── 詳情頁頭像 ── */
+.ds-av-card{width:64px;flex-shrink:0;border-radius:10px;overflow:hidden;aspect-ratio:3/4.2;display:flex;flex-direction:column;border:1.5px solid}
+.ds-av-top{height:5px;flex-shrink:0}
+.ds-av-body{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c1b2e;padding:1px}
+.ds-av-body img{width:100%;height:100%;object-fit:contain;display:block}
 .pick-card-pos{font-family:'Bebas Neue',cursive;font-size:10px;line-height:1;opacity:.9;transform:translateY(4px)}
 .pick-card-foot{padding:5px 6px 8px;background:rgba(255,255,255,.78);border-top:1px solid rgba(0,0,0,.05)}
 .pick-card-name{font-size:10px;font-weight:700;color:#1f1b16;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
