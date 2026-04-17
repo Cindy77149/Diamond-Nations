@@ -76,7 +76,8 @@ function getPlayerKey(player){
 function getPlayerPoseSrc(p){
   const ps=posArr(p);
   const isJP=p.nat==='🇯🇵';
-  const pre=isJP?'jp_':'pose_';
+  const isKR=p.nat==='🇰🇷';
+  const pre=isJP?'jp_':isKR?'kr_':'pose_';
   if(ps.includes('C'))return pre+'catcher.png';
   if(isPitcherPlayer(p))return pre+'pitcher.png';
   if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return pre+'outfielder.png';
