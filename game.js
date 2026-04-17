@@ -815,7 +815,7 @@ function renderCollection(){
           <span class="cc-rar-tag" style="color:${rs.c};background:${rs.bg}">${isXc?'RTR':rs.lbl}</span>
         </div>
       </div>`;
-    card.onclick=()=>openDetail(p.name,p.year??null);
+    card.onclick=()=>{const dp=isOwned?(ownedUnique.find(op=>getPlayerKey(op)===getPlayerKey(p))||p):p;showDetail(dp);};
     frag.appendChild(card);
   });
   grid.innerHTML='';
