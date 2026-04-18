@@ -762,7 +762,7 @@ function renderCollection(){
   const typeLabel=document.getElementById('collection-type-label');
   if(statusLabel)statusLabel.textContent=statusOptions.find(o=>o.id===collectionStatusFilter)?.label||'收藏';
   if(nationLabel)nationLabel.textContent=nationOptions.find(o=>o.id===collectionNationFilter)?.label||'國家';
-  if(typeLabel)typeLabel.textContent=typeOptions.find(o=>o.id===collectionTypeFilter)?.label||'類型';
+  if(typeLabel){const _tf=typeOptions.find(o=>o.id===collectionTypeFilter)||typeOptions.flatMap(o=>o.children||[]).find(c=>c.id===collectionTypeFilter);typeLabel.textContent=_tf?.label||'類型';}
   document.getElementById('collection-status-wrap')?.classList.toggle('active',collectionStatusFilter!=='all');
   document.getElementById('collection-nation-wrap')?.classList.toggle('active',collectionNationFilter!=='all');
   document.getElementById('collection-type-wrap')?.classList.toggle('active',collectionTypeFilter!=='all');
