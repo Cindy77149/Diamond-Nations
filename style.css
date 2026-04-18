@@ -530,10 +530,11 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
 .rc-ovr{font-family:'Bebas Neue',cursive;font-size:13px;line-height:1}
 .rc-sub{font-size:6px;font-weight:700;padding:1px 3px;border-radius:3px}
 /* ── 詳情頁頭像 ── */
-.ds-av-card{width:64px;flex-shrink:0;border-radius:10px;overflow:hidden;aspect-ratio:3/4.2;display:flex;flex-direction:column;border:1.5px solid}
-.ds-av-top{height:5px;flex-shrink:0}
-.ds-av-body{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c1b2e;padding:1px}
-.ds-av-body img{width:100%;height:100%;object-fit:contain;display:block}
+.ds-av-card{width:64px;flex-shrink:0;border-radius:10px;overflow:hidden;aspect-ratio:3/4.2;display:flex;flex-direction:column;border:2px solid}
+.ds-av-top{height:6px;flex-shrink:0}
+.ds-av-body{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#1d3352 0%,#0c1b2e 75%)}
+.ds-av-body img{width:100%;height:100%;object-fit:contain;display:block;position:relative;z-index:1}
+.ds-av-body::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 50%,rgba(0,0,0,.35) 100%);z-index:2;pointer-events:none}
 .pick-card-pos{font-family:'Bebas Neue',cursive;font-size:10px;line-height:1;opacity:.9;transform:translateY(4px)}
 .pick-card-foot{padding:5px 6px 8px;background:rgba(255,255,255,.78);border-top:1px solid rgba(0,0,0,.05)}
 .pick-card-name{font-size:10px;font-weight:700;color:#1f1b16;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
