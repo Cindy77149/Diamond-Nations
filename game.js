@@ -749,6 +749,7 @@ function renderCollection(){
       {id:'CF',label:'CF'},
       {id:'RF',label:'RF'},
       {id:'OF',label:'OF'},
+      {id:'DH',label:'DH'},
     ]},
     {id:'pitchers',label:'投手',children:[
       {id:'SP',label:'SP'},
@@ -778,6 +779,7 @@ function renderCollection(){
   if(collectionStatusFilter==='owned')list=list.filter(p=>ownedKeys.has(getPlayerKey(p)));
   if(collectionStatusFilter==='unowned')list=list.filter(p=>!ownedKeys.has(getPlayerKey(p)));
   if(collectionTypeFilter==='hitters')list=list.filter(p=>!isPitcherPlayer(p));
+  else if(collectionTypeFilter==='DH')list=list.filter(p=>hasPos(p,'DH'));
   else if(['C','1B','2B','3B','SS','LF','CF','RF','OF'].includes(collectionTypeFilter))
     list=list.filter(p=>!isPitcherPlayer(p)&&hasPos(p,collectionTypeFilter));
   else if(collectionTypeFilter==='pitchers')list=list.filter(p=>isPitcherPlayer(p));
