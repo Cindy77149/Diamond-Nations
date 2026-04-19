@@ -81,7 +81,7 @@ function getPlayerPoseSrc(p){
   const pre=isJP?'jp_':isKR?'kr_':isUS?'us_':'pose_';
   if(ps.includes('C'))return pre+'catcher.png';
   if(isPitcherPlayer(p))return pre+'pitcher.png';
-  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return pre+'outfielder.png';
+  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return isUS?'us_outfilder.png':pre+'outfielder.png';
   if(ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS'))return pre+'infielder.png';
   return pre+'batter.png';
 }
