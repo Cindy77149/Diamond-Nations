@@ -756,6 +756,13 @@ function renderCollection(){
       {id:'RP',label:'RP'},
       {id:'CP',label:'CP'},
     ]},
+    {id:'rarity',label:'等級',children:[
+      {id:'rar_h',label:'HERO'},
+      {id:'rar_l',label:'LEGEND'},
+      {id:'rar_r',label:'RARE'},
+      {id:'rar_c',label:'COM'},
+      {id:'rar_x',label:'RETRO'},
+    ]},
   ];
   const statusLabel=document.getElementById('collection-status-label');
   const nationLabel=document.getElementById('collection-nation-label');
@@ -786,6 +793,7 @@ function renderCollection(){
   else if(collectionTypeFilter==='SP')list=list.filter(p=>hasPos(p,'SP')||(!hasPos(p,'RP')&&!hasPos(p,'CP')&&p.pit));
   else if(collectionTypeFilter==='RP')list=list.filter(p=>hasPos(p,'RP'));
   else if(collectionTypeFilter==='CP')list=list.filter(p=>hasPos(p,'CP'));
+  else if(collectionTypeFilter.startsWith('rar_'))list=list.filter(p=>p.rar===collectionTypeFilter.slice(4));
   list.sort((a,b)=>
     (ownedKeys.has(getPlayerKey(b))?1:0)-(ownedKeys.has(getPlayerKey(a))?1:0)||
     b.ovr-a.ovr||cleanName(a.name).localeCompare(cleanName(b.name),'zh-Hant')
