@@ -807,7 +807,7 @@ function renderCollection(){
     card.innerHTML=`
       <div class="collection-card-top" style="background:${rs.bd}"></div>
       <div class="collection-card-body">
-        <img src="${getPlayerPoseSrc(p)}" class="cc-img${getPlayerPoseSrc(p)==='us_batter.png'?' cc-img-lg':''}" alt="">
+        <img src="${getPlayerPoseSrc(p)}" class="cc-img${['us_batter.png','us_outfilder.png'].includes(getPlayerPoseSrc(p))?' cc-img-lg':''}" alt="">
       </div>
       <div class="collection-card-foot">
         <div class="cc-name-row">
@@ -1777,7 +1777,7 @@ function showDetail(p,context=null){
       <div class="ds-av-card" style="border-color:${rs.bd};box-shadow:${avGlow}">
         <div class="ds-av-top" style="background:${rs.bd}"></div>
         <div class="ds-av-body">
-          <img src="${getPlayerPoseSrc(p)}" class="${getPlayerPoseSrc(p)==='us_batter.png'?'ds-av-img-lg':''}" style="width:100%;height:100%;object-fit:contain;display:block">
+          <img src="${getPlayerPoseSrc(p)}" class="${['us_batter.png','us_outfilder.png'].includes(getPlayerPoseSrc(p))?'ds-av-img-lg':''}" style="width:100%;height:100%;object-fit:contain;display:block">
         </div>
       </div>
       <div class="ds-inf">
