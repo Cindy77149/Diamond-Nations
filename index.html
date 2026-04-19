@@ -199,14 +199,14 @@
             </button>
             <div class="collection-dropdown-menu" id="collection-type-menu"></div>
           </div>
+          <div class="collection-select-card" id="collection-rarity-wrap">
+            <span class="collection-select-kicker">等級</span>
+            <button class="collection-select-btn" id="collection-rarity-btn" type="button" onclick="toggleCollectionDropdown('rarity')">
+              <span id="collection-rarity-label">等級</span>
+            </button>
+            <div class="collection-dropdown-menu" id="collection-rarity-menu"></div>
+          </div>
         </div>
-      </div>
-      <div class="col-rar-row">
-        <button class="col-rar-btn" data-rar="h" onclick="setCollectionRarityFilter('h')">HERO</button>
-        <button class="col-rar-btn" data-rar="l" onclick="setCollectionRarityFilter('l')">LEGEND</button>
-        <button class="col-rar-btn" data-rar="r" onclick="setCollectionRarityFilter('r')">RARE</button>
-        <button class="col-rar-btn" data-rar="c" onclick="setCollectionRarityFilter('c')">COM</button>
-        <button class="col-rar-btn" data-rar="x" onclick="setCollectionRarityFilter('x')">RETRO</button>
       </div>
     </div>
     <div class="collection-picker-overlay" id="collection-picker-overlay" onclick="closeCollectionPicker(event)">

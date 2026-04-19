@@ -57,7 +57,7 @@ let collectionNationFilter='all';
 let collectionTypeFilter='all';
 let collectionRarityFilter='all';
 let collectionDropdownOpen=null;
-let collectionDropdownOptions={status:[],nation:[],type:[]};
+let collectionDropdownOptions={status:[],nation:[],type:[],rarity:[]};
 // sync initial state
 syncFromState();
 
@@ -609,7 +609,8 @@ function setCollectionNationFilter(filter){
   renderCollection();
 }
 function setCollectionRarityFilter(rar){
-  collectionRarityFilter=collectionRarityFilter===rar?'all':rar;
+  collectionRarityFilter=rar;
+  closeCollectionDropdown();
   renderCollection();
 }
 function setCollectionTypeFilter(filter){
@@ -765,15 +766,19 @@ function renderCollection(){
   const statusLabel=document.getElementById('collection-status-label');
   const nationLabel=document.getElementById('collection-nation-label');
   const typeLabel=document.getElementById('collection-type-label');
+  const rarityLabel=document.getElementById('collection-rarity-label');
+  const rarityOptions=[
+    {id:'all',label:'等級'},
+    {id:'h',label:'HERO'},{id:'l',label:'LEGEND'},{id:'r',label:'RARE'},{id:'c',label:'COM'},{id:'x',label:'RETRO'},
+  ];
   if(statusLabel)statusLabel.textContent=statusOptions.find(o=>o.id===collectionStatusFilter)?.label||'收藏';
   if(nationLabel)nationLabel.textContent=nationOptions.find(o=>o.id===collectionNationFilter)?.label||'國家';
   if(typeLabel){const _tf=typeOptions.find(o=>o.id===collectionTypeFilter)||typeOptions.flatMap(o=>o.children||[]).find(c=>c.id===collectionTypeFilter);typeLabel.textContent=_tf?.label||'類型';}
+  if(rarityLabel)rarityLabel.textContent=rarityOptions.find(o=>o.id===collectionRarityFilter)?.label||'等級';
   document.getElementById('collection-status-wrap')?.classList.toggle('active',collectionStatusFilter!=='all');
   document.getElementById('collection-nation-wrap')?.classList.toggle('active',collectionNationFilter!=='all');
   document.getElementById('collection-type-wrap')?.classList.toggle('active',collectionTypeFilter!=='all');
-  document.querySelectorAll('.col-rar-btn').forEach(btn=>{
-    btn.classList.toggle('active',btn.dataset.rar===collectionRarityFilter);
-  });
+  document.getElementById('collection-rarity-wrap')?.classList.toggle('active',collectionRarityFilter!=='all');
   collectionDropdownOptions.status=statusOptions.map(o=>({...o,active:collectionStatusFilter===o.id,onPick:()=>setCollectionStatusFilter(o.id)}));
   collectionDropdownOptions.nation=nationOptions.map(o=>({...o,active:collectionNationFilter===o.id,onPick:()=>setCollectionNationFilter(o.id)}));
   collectionDropdownOptions.type=typeOptions.map(o=>({
@@ -782,6 +787,7 @@ function renderCollection(){
     onPick:()=>setCollectionTypeFilter(o.id),
     children:o.children?.map(c=>({...c,active:collectionTypeFilter===c.id,onPick:()=>setCollectionTypeFilter(c.id)})),
   }));
+  collectionDropdownOptions.rarity=rarityOptions.map(o=>({...o,active:collectionRarityFilter===o.id,onPick:()=>setCollectionRarityFilter(o.id)}));
   let list=[...allUnique];
   if(collectionNationFilter!=='all')list=list.filter(p=>p.nat===collectionNationFilter);
   if(collectionStatusFilter==='owned')list=list.filter(p=>ownedKeys.has(getPlayerKey(p)));
