@@ -1777,7 +1777,7 @@ function showDetail(p,context=null){
       <div class="ds-av-card" style="border-color:${rs.bd};box-shadow:${avGlow}">
         <div class="ds-av-top" style="background:${rs.bd}"></div>
         <div class="ds-av-body">
-          <img src="${getPlayerPoseSrc(p)}" class="${['us_batter.png','us_outfilder.png'].includes(getPlayerPoseSrc(p))?'ds-av-img-lg':''}" style="width:100%;height:100%;object-fit:contain;display:block">
+          ${(()=>{const _ps=getPlayerPoseSrc(p);const _lg=['us_batter.png','us_outfilder.png'].includes(_ps);return `<img src="${_ps}" class="${_lg?'ds-av-img-lg':''}" style="width:100%;height:100%;object-fit:${_lg?'cover':'contain'};object-position:center 40%;display:block">`;})()}
         </div>
       </div>
       <div class="ds-inf">
