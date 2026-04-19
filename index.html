@@ -201,6 +201,13 @@
           </div>
         </div>
       </div>
+      <div class="col-rar-row">
+        <button class="col-rar-btn" data-rar="h" onclick="setCollectionRarityFilter('h')">HERO</button>
+        <button class="col-rar-btn" data-rar="l" onclick="setCollectionRarityFilter('l')">LEGEND</button>
+        <button class="col-rar-btn" data-rar="r" onclick="setCollectionRarityFilter('r')">RARE</button>
+        <button class="col-rar-btn" data-rar="c" onclick="setCollectionRarityFilter('c')">COM</button>
+        <button class="col-rar-btn" data-rar="x" onclick="setCollectionRarityFilter('x')">RETRO</button>
+      </div>
     </div>
     <div class="collection-picker-overlay" id="collection-picker-overlay" onclick="closeCollectionPicker(event)">
       <div class="collection-picker-sheet" onclick="event.stopPropagation()">

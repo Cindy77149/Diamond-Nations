@@ -55,6 +55,7 @@ let scoutCountdownTimer=null;
 let collectionStatusFilter='all';
 let collectionNationFilter='all';
 let collectionTypeFilter='all';
+let collectionRarityFilter='all';
 let collectionDropdownOpen=null;
 let collectionDropdownOptions={status:[],nation:[],type:[]};
 // sync initial state
@@ -607,6 +608,10 @@ function setCollectionNationFilter(filter){
   closeCollectionDropdown();
   renderCollection();
 }
+function setCollectionRarityFilter(rar){
+  collectionRarityFilter=collectionRarityFilter===rar?'all':rar;
+  renderCollection();
+}
 function setCollectionTypeFilter(filter){
   collectionTypeFilter=filter;
   closeCollectionDropdown();
@@ -756,13 +761,6 @@ function renderCollection(){
       {id:'RP',label:'RP'},
       {id:'CP',label:'CP'},
     ]},
-    {id:'rarity',label:'等級',children:[
-      {id:'rar_h',label:'HERO'},
-      {id:'rar_l',label:'LEGEND'},
-      {id:'rar_r',label:'RARE'},
-      {id:'rar_c',label:'COM'},
-      {id:'rar_x',label:'RETRO'},
-    ]},
   ];
   const statusLabel=document.getElementById('collection-status-label');
   const nationLabel=document.getElementById('collection-nation-label');
@@ -773,6 +771,9 @@ function renderCollection(){
   document.getElementById('collection-status-wrap')?.classList.toggle('active',collectionStatusFilter!=='all');
   document.getElementById('collection-nation-wrap')?.classList.toggle('active',collectionNationFilter!=='all');
   document.getElementById('collection-type-wrap')?.classList.toggle('active',collectionTypeFilter!=='all');
+  document.querySelectorAll('.col-rar-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.rar===collectionRarityFilter);
+  });
   collectionDropdownOptions.status=statusOptions.map(o=>({...o,active:collectionStatusFilter===o.id,onPick:()=>setCollectionStatusFilter(o.id)}));
   collectionDropdownOptions.nation=nationOptions.map(o=>({...o,active:collectionNationFilter===o.id,onPick:()=>setCollectionNationFilter(o.id)}));
   collectionDropdownOptions.type=typeOptions.map(o=>({
@@ -793,7 +794,7 @@ function renderCollection(){
   else if(collectionTypeFilter==='SP')list=list.filter(p=>hasPos(p,'SP')||(!hasPos(p,'RP')&&!hasPos(p,'CP')&&p.pit));
   else if(collectionTypeFilter==='RP')list=list.filter(p=>hasPos(p,'RP'));
   else if(collectionTypeFilter==='CP')list=list.filter(p=>hasPos(p,'CP'));
-  else if(collectionTypeFilter.startsWith('rar_'))list=list.filter(p=>p.rar===collectionTypeFilter.slice(4));
+  if(collectionRarityFilter!=='all')list=list.filter(p=>p.rar===collectionRarityFilter);
   list.sort((a,b)=>
     (ownedKeys.has(getPlayerKey(b))?1:0)-(ownedKeys.has(getPlayerKey(a))?1:0)||
     b.ovr-a.ovr||cleanName(a.name).localeCompare(cleanName(b.name),'zh-Hant')
