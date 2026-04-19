@@ -812,7 +812,7 @@ body{background:radial-gradient(circle at top,#2a334d 0,#121726 42%,#06070b 100%
 .ds-rarity-main{font-size:16px;line-height:1}
 .ds-rarity-sub{font-size:10px;opacity:.72}
 .ds-head{display:flex;gap:11px;padding:14px 14px 11px;border-bottom:.5px solid var(--ds-border)}
-.ds-av-card{width:58px;flex-shrink:0;border-radius:9px;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:3/4.2;border-width:1px}
+.ds-av-card{width:58px;flex-shrink:0;border-radius:9px;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:3/4.2;border-width:2px}
 .ds-av-top{height:0;display:none}
 .ds-av-body{flex:1;position:relative;overflow:hidden}
 .ds-av-sym{font-family:'Bebas Neue',cursive;font-size:13px;opacity:.4;letter-spacing:.05em}
