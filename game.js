@@ -80,11 +80,11 @@ function getPlayerPoseSrc(p){
   const isKR=p.nat==='🇰🇷';
   const isUS=p.nat==='🇺🇸';
   const pre=isJP?'jp_':isKR?'kr_':isUS?'us_':'pose_';
-  if(ps.includes('C'))return pre+'catcher.png';
-  if(isPitcherPlayer(p))return pre+'pitcher.png';
-  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return isUS?'us_outfilder.png':pre+'outfielder.png';
-  if(ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS'))return pre+'infielder.png';
-  return pre+'batter.png';
+  if(ps.includes('C'))return 'icons/'+pre+'catcher.png';
+  if(isPitcherPlayer(p))return 'icons/'+pre+'pitcher.png';
+  if(ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF'))return isUS?'icons/us_outfilder.png':'icons/'+pre+'outfielder.png';
+  if(ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS'))return 'icons/'+pre+'infielder.png';
+  return 'icons/'+pre+'batter.png';
 }
 
 function buildPoseMiniCard(p,size='sm'){
@@ -829,7 +829,7 @@ function renderCollection(){
     card.innerHTML=`
       <div class="collection-card-top" style="background:${rs.bd}"></div>
       <div class="collection-card-body">
-        <img src="${getPlayerPoseSrc(p)}" class="cc-img${['us_batter.png','us_outfilder.png'].includes(getPlayerPoseSrc(p))?' cc-img-lg':''}" alt="">
+        <img src="${getPlayerPoseSrc(p)}" class="cc-img${['icons/us_batter.png','icons/us_outfilder.png'].includes(getPlayerPoseSrc(p))?' cc-img-lg':''}" alt="">
       </div>
       <div class="collection-card-foot">
         <div class="cc-name-row">
@@ -1656,11 +1656,11 @@ function getPoseSVG(p,size=44){
   const isOF=ps.includes('OF')||ps.includes('LF')||ps.includes('CF')||ps.includes('RF');
   const isIF=ps.includes('1B')||ps.includes('2B')||ps.includes('3B')||ps.includes('SS');
   let src;
-  if(isC)src='pose_catcher.png';
-  else if(isP)src='pose_pitcher.png';
-  else if(isOF)src='pose_outfielder.png';
-  else if(isIF)src='pose_infielder.png';
-  else src='pose_batter.png';
+  if(isC)src='icons/pose_catcher.png';
+  else if(isP)src='icons/pose_pitcher.png';
+  else if(isOF)src='icons/pose_outfielder.png';
+  else if(isIF)src='icons/pose_infielder.png';
+  else src='icons/pose_batter.png';
   return `<img src="${src}" style="width:${size}px;height:${Math.round(size*1.4)}px;object-fit:contain;display:block;margin:0 auto;">`;
 }
 function _getPoseSVG_unused(p,size=44){
@@ -1804,7 +1804,7 @@ function showDetail(p,context=null){
       <div class="ds-av-card" style="border-color:${rs.bd};box-shadow:${avGlow}">
         <div class="ds-av-top" style="background:${rs.bd}"></div>
         <div class="ds-av-body">
-          ${(()=>{const _ps=getPlayerPoseSrc(p);const _lg=['us_batter.png','us_outfilder.png'].includes(_ps);return `<img src="${_ps}" class="${_lg?'ds-av-img-lg':''}" style="width:100%;height:100%;object-fit:cover;object-position:center ${_lg?'40%':'50%'};display:block">`;})()}
+          ${(()=>{const _ps=getPlayerPoseSrc(p);const _lg=['icons/us_batter.png','icons/us_outfilder.png'].includes(_ps);return `<img src="${_ps}" class="${_lg?'ds-av-img-lg':''}" style="width:100%;height:100%;object-fit:cover;object-position:center ${_lg?'40%':'50%'};display:block">`;})()}
         </div>
       </div>
       <div class="ds-inf">

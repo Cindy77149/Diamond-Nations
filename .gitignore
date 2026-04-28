@@ -7,3 +7,8 @@ scripts/__pycache__/
 .claude/
 
 ~$*.xlsx
+
+# Local generated image drafts
+ChatGPT Image*.png
+Gemini_Generated_Image*.png
+screenshot*.png
