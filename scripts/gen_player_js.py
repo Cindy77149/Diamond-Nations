@@ -3,13 +3,15 @@ gen_player_js.py
 Read wbc_roster.xlsx → generate players/<nat>.js
 """
 from __future__ import annotations
+import json
 import math
 from pathlib import Path
 from collections import defaultdict
 from openpyxl import load_workbook
 
-XLSX       = Path(__file__).parent.parent / "wbc_roster.xlsx"
-OUTPUT     = Path(__file__).parent.parent / "players-all.js"
+XLSX        = Path(__file__).parent.parent / "wbc_roster.xlsx"
+OUTPUT      = Path(__file__).parent.parent / "players-all.js"
+OUTPUT_JSON = Path(__file__).parent.parent / "data" / "players.json"
 
 PITCHER_POS = {"SP", "RP", "CP", "SP/RP", "P"}
 
@@ -484,40 +486,57 @@ REGULAR_EXTRAS = [
 
 # ── 傳奇球員（rar:'x'，手動維護）────────────────────────────────────────────
 # stats 野手:[打擊力,選球眼,速度,守備力,心理]  投手:[投球力,控球力,變化球,體力,心理]
-LEGENDS = [
+LEGENDS: list[dict] = [
     # 🇹🇼 台灣
-    "{name:'彭政閔 [2013 傳奇]',year:2013,en:'Cheng-Min Peng',nat:'🇹🇼',pos:'1B',av:'🐘',rar:'x',ovr:99,pit:false,era:[2013],stats:[99,97,78,95,99],story:'<hl>復古傳奇特別款</hl>・彭政閔・中職先生・2013 WBC 以肉身擋球的鐵血精神感動全台・永遠的中華隊隊長。',skills:[{i:'👑',n:'鐵血隊長',d:'守備+20%'},{i:'🛡️',n:'護國神柱',d:'打擊無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'王建民 [2013 傳奇]',year:2013,en:'Chien-Ming Wang',nat:'🇹🇼',pos:'SP',av:'⬇️',rar:'x',ovr:99,pit:true,era:[2013],stats:[99,99,99,90,99],story:'<hl>復古傳奇特別款</hl>・王建民・2013 WBC 完美鎮壓・那個年代全台灣最熟悉的名字・每一顆伸卡球都是台灣棒球不滅的傳說。',skills:[{i:'⬇️',n:'伸卡地獄',d:'地滾球率永恆第一'},{i:'📸',n:'復古印記',d:'歷史加成+30%'},{i:'🇹🇼',n:'台灣驕傲',d:'全開無限制'}]}",
-    "{name:'周思齊 [2013 傳奇]',year:2013,en:'Szu-Chi Chou',nat:'🇹🇼',pos:'LF',av:'🎯',rar:'x',ovr:99,pit:false,era:[2013],stats:[99,99,72,78,99],story:'<hl>復古傳奇特別款</hl>・周思齊・2013 WBC 對決田中將大敲出超前安打・那一刻全台灣屏息・中職最強安打機器。',skills:[{i:'🎯',n:'安打之神',d:'打擊率永恆頂點'},{i:'📸',n:'復古印記',d:'歷史加成+30%'},{i:'🔥',n:'大心臟',d:'落後時打擊無上限'}]}",
+    {"name": "彭政閔 [2013 傳奇]", "year": 2013, "en": "Cheng-Min Peng", "nat": "🇹🇼", "pos": "1B", "av": "🐘", "rar": "x", "ovr": 99, "pit": False, "era": [2013], "stats": [99, 97, 78, 95, 99], "story": "<hl>復古傳奇特別款</hl>・彭政閔・中職先生・2013 WBC 以肉身擋球的鐵血精神感動全台・永遠的中華隊隊長。", "skills": [{"i": "👑", "n": "鐵血隊長", "d": "守備+20%"}, {"i": "🛡️", "n": "護國神柱", "d": "打擊無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "王建民 [2013 傳奇]", "year": 2013, "en": "Chien-Ming Wang", "nat": "🇹🇼", "pos": "SP", "av": "⬇️", "rar": "x", "ovr": 99, "pit": True, "era": [2013], "stats": [99, 99, 99, 90, 99], "story": "<hl>復古傳奇特別款</hl>・王建民・2013 WBC 完美鎮壓・那個年代全台灣最熟悉的名字・每一顆伸卡球都是台灣棒球不滅的傳說。", "skills": [{"i": "⬇️", "n": "伸卡地獄", "d": "地滾球率永恆第一"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}, {"i": "🇹🇼", "n": "台灣驕傲", "d": "全開無限制"}]},
+    {"name": "周思齊 [2013 傳奇]", "year": 2013, "en": "Szu-Chi Chou", "nat": "🇹🇼", "pos": "LF", "av": "🎯", "rar": "x", "ovr": 99, "pit": False, "era": [2013], "stats": [99, 99, 72, 78, 99], "story": "<hl>復古傳奇特別款</hl>・周思齊・2013 WBC 對決田中將大敲出超前安打・那一刻全台灣屏息・中職最強安打機器。", "skills": [{"i": "🎯", "n": "安打之神", "d": "打擊率永恆頂點"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}, {"i": "🔥", "n": "大心臟", "d": "落後時打擊無上限"}]},
     # 🇯🇵 日本
-    "{name:'鈴木一朗 [2006 傳奇]',year:2006,en:'Ichiro Suzuki',nat:'🇯🇵',pos:'CF',av:'🎖️',rar:'x',ovr:99,pit:false,era:[2006],stats:[99,88,99,99,99],story:'<hl>復古傳奇特別款</hl>・鈴木一朗・安打製造機・2006 WBC 帶領日本奪冠・棒球史上最純粹的打擊藝術家。',skills:[{i:'🎖️',n:'安打紀錄',d:'安打數永恆第一'},{i:'💨',n:'超音速跑壘',d:'速度無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'松坂大輔 [2006 傳奇]',year:2006,en:'Daisuke Matsuzaka',nat:'🇯🇵',pos:'SP',av:'🌀',rar:'x',ovr:99,pit:true,era:[2006],stats:[99,96,99,88,99],story:'<hl>復古傳奇特別款</hl>・松坂大輔・2006 WBC 最強先發・螺旋球讓全球打者束手無策・世代級王牌的絕對壓制。',skills:[{i:'🌀',n:'螺旋球',d:'揮空率無上限'},{i:'🔥',n:'WBC MVP',d:'關鍵局壓制+50%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'大谷翔平 [2023 傳奇]',year:2023,en:'Shohei Ohtani',nat:'🇯🇵',pos:'SP',av:'🌟',rar:'x',ovr:99,pit:true,era:[2023],stats:[99,99,99,95,99],story:'<hl>復古傳奇特別款</hl>・大谷翔平・2023 WBC MVP・決賽最後一球親手三振 Mike Trout・賽前演講「今天讓我們憧憬大聯盟吧」・史上最完整的二刀流傳奇。',skills:[{i:'🌟',n:'二刀流',d:'投打全數據無上限'},{i:'🔥',n:'決賽終結者',d:'關鍵局壓制+99%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "鈴木一朗 [2006 傳奇]", "year": 2006, "en": "Ichiro Suzuki", "nat": "🇯🇵", "pos": "CF", "av": "🎖️", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [99, 88, 99, 99, 99], "story": "<hl>復古傳奇特別款</hl>・鈴木一朗・安打製造機・2006 WBC 帶領日本奪冠・棒球史上最純粹的打擊藝術家。", "skills": [{"i": "🎖️", "n": "安打紀錄", "d": "安打數永恆第一"}, {"i": "💨", "n": "超音速跑壘", "d": "速度無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "松坂大輔 [2006 傳奇]", "year": 2006, "en": "Daisuke Matsuzaka", "nat": "🇯🇵", "pos": "SP", "av": "🌀", "rar": "x", "ovr": 99, "pit": True, "era": [2006], "stats": [99, 96, 99, 88, 99], "story": "<hl>復古傳奇特別款</hl>・松坂大輔・2006 WBC 最強先發・螺旋球讓全球打者束手無策・世代級王牌的絕對壓制。", "skills": [{"i": "🌀", "n": "螺旋球", "d": "揮空率無上限"}, {"i": "🔥", "n": "WBC MVP", "d": "關鍵局壓制+50%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "大谷翔平 [2023 傳奇]", "year": 2023, "en": "Shohei Ohtani", "nat": "🇯🇵", "pos": "SP", "av": "🌟", "rar": "x", "ovr": 99, "pit": True, "era": [2023], "stats": [99, 99, 99, 95, 99], "story": "<hl>復古傳奇特別款</hl>・大谷翔平・2023 WBC MVP・決賽最後一球親手三振 Mike Trout・賽前演講「今天讓我們憧憬大聯盟吧」・史上最完整的二刀流傳奇。", "skills": [{"i": "🌟", "n": "二刀流", "d": "投打全數據無上限"}, {"i": "🔥", "n": "決賽終結者", "d": "關鍵局壓制+99%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
     # 🇰🇷 韓國
-    "{name:'李承燁 [2006 傳奇]',year:2006,en:'Seung-yeop Lee',nat:'🇰🇷',pos:'1B',av:'💣',rar:'x',ovr:99,pit:false,era:[2006],stats:[82,99,75,78,99],story:'<hl>復古傳奇特別款</hl>・李承燁・韓國全壘打王・KBO 史上最恐怖的長打威脅・2006 WBC 核心砲手。',skills:[{i:'💣',n:'全壘打王',d:'HR無上限'},{i:'👑',n:'韓國英雄',d:'全隊士氣+20%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'朴贊浩 [2006 傳奇]',year:2006,en:'Chan Ho Park',nat:'🇰🇷',pos:'SP',av:'🔥',rar:'x',ovr:99,pit:true,era:[2006],stats:[99,92,99,88,99],story:'<hl>復古傳奇特別款</hl>・朴贊浩・韓國旅美先驅・2006 WBC 以壓倒性球威代表韓國出戰・亞洲投手進軍 MLB 的燈塔。',skills:[{i:'🔥',n:'旅美先驅',d:'球速無上限'},{i:'⚡',n:'壓制力',d:'三振率+40%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'柳賢振 [2013 傳奇]',year:2013,en:'Hyun-Jin Ryu',nat:'🇰🇷',pos:'SP',av:'🎯',rar:'x',ovr:99,pit:true,era:[2013],stats:[96,99,92,88,99],story:'<hl>復古傳奇特別款</hl>・柳賢振・2013 WBC 韓國王牌・精密控球配合多樣變化球，壓制各國強打。',skills:[{i:'🎯',n:'精準控球',d:'四壞球率永久降低'},{i:'🌀',n:'變化球大師',d:'揮空率+40%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "李承燁 [2006 傳奇]", "year": 2006, "en": "Seung-yeop Lee", "nat": "🇰🇷", "pos": "1B", "av": "💣", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [82, 99, 75, 78, 99], "story": "<hl>復古傳奇特別款</hl>・李承燁・韓國全壘打王・KBO 史上最恐怖的長打威脅・2006 WBC 核心砲手。", "skills": [{"i": "💣", "n": "全壘打王", "d": "HR無上限"}, {"i": "👑", "n": "韓國英雄", "d": "全隊士氣+20%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "朴贊浩 [2006 傳奇]", "year": 2006, "en": "Chan Ho Park", "nat": "🇰🇷", "pos": "SP", "av": "🔥", "rar": "x", "ovr": 99, "pit": True, "era": [2006], "stats": [99, 92, 99, 88, 99], "story": "<hl>復古傳奇特別款</hl>・朴贊浩・韓國旅美先驅・2006 WBC 以壓倒性球威代表韓國出戰・亞洲投手進軍 MLB 的燈塔。", "skills": [{"i": "🔥", "n": "旅美先驅", "d": "球速無上限"}, {"i": "⚡", "n": "壓制力", "d": "三振率+40%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "柳賢振 [2013 傳奇]", "year": 2013, "en": "Hyun-Jin Ryu", "nat": "🇰🇷", "pos": "SP", "av": "🎯", "rar": "x", "ovr": 99, "pit": True, "era": [2013], "stats": [96, 99, 92, 88, 99], "story": "<hl>復古傳奇特別款</hl>・柳賢振・2013 WBC 韓國王牌・精密控球配合多樣變化球，壓制各國強打。", "skills": [{"i": "🎯", "n": "精準控球", "d": "四壞球率永久降低"}, {"i": "🌀", "n": "變化球大師", "d": "揮空率+40%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
     # 🇺🇸 美國
-    "{name:'Derek Jeter [2006 傳奇]',year:2006,en:'Derek Jeter',nat:'🇺🇸',pos:'SS',av:'👑',rar:'x',ovr:99,pit:false,era:[2006],stats:[90,85,88,92,99],story:'<hl>復古傳奇特別款</hl>・Derek Jeter・洋基隊長・2006 WBC 美國隊精神領袖・名人堂等級的游擊手。',skills:[{i:'👑',n:'洋基隊長',d:'全隊 OVR+15%'},{i:'🛡️',n:'黃金手套',d:'守備無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Ken Griffey Jr. [2006 傳奇]',year:2006,en:'Ken Griffey Jr.',nat:'🇺🇸',pos:'CF',av:'🦅',rar:'x',ovr:99,pit:false,era:[2006],stats:[88,99,88,95,99],story:'<hl>復古傳奇特別款</hl>・Ken Griffey Jr.・The Kid・完美揮棒弧度・2006 WBC 史上最全能的中外野手之一。',skills:[{i:'🦅',n:'完美揮棒',d:'HR+無上限'},{i:'💨',n:'中外野霸主',d:'守備+速度無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Marcus Stroman [2017 傳奇]',year:2017,en:'Marcus Stroman',nat:'🇺🇸',pos:'SP',av:'✊',rar:'x',ovr:99,pit:true,era:[2017],stats:[88,92,85,88,99],story:'<hl>復古傳奇特別款</hl>・Marcus Stroman・2017 WBC 美國奪冠功臣・小個子大心臟・關鍵時刻永不退縮的鬥士。',skills:[{i:'✊',n:'鬥士精神',d:'關鍵局壓制無上限'},{i:'⬇️',n:'地滾球製造機',d:'雙殺機率+40%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "Derek Jeter [2006 傳奇]", "year": 2006, "en": "Derek Jeter", "nat": "🇺🇸", "pos": "SS", "av": "👑", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [90, 85, 88, 92, 99], "story": "<hl>復古傳奇特別款</hl>・Derek Jeter・洋基隊長・2006 WBC 美國隊精神領袖・名人堂等級的游擊手。", "skills": [{"i": "👑", "n": "洋基隊長", "d": "全隊 OVR+15%"}, {"i": "🛡️", "n": "黃金手套", "d": "守備無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Ken Griffey Jr. [2006 傳奇]", "year": 2006, "en": "Ken Griffey Jr.", "nat": "🇺🇸", "pos": "CF", "av": "🦅", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [88, 99, 88, 95, 99], "story": "<hl>復古傳奇特別款</hl>・Ken Griffey Jr.・The Kid・完美揮棒弧度・2006 WBC 史上最全能的中外野手之一。", "skills": [{"i": "🦅", "n": "完美揮棒", "d": "HR+無上限"}, {"i": "💨", "n": "中外野霸主", "d": "守備+速度無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Marcus Stroman [2017 傳奇]", "year": 2017, "en": "Marcus Stroman", "nat": "🇺🇸", "pos": "SP", "av": "✊", "rar": "x", "ovr": 99, "pit": True, "era": [2017], "stats": [88, 92, 85, 88, 99], "story": "<hl>復古傳奇特別款</hl>・Marcus Stroman・2017 WBC 美國奪冠功臣・小個子大心臟・關鍵時刻永不退縮的鬥士。", "skills": [{"i": "✊", "n": "鬥士精神", "d": "關鍵局壓制無上限"}, {"i": "⬇️", "n": "地滾球製造機", "d": "雙殺機率+40%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
     # 🇩🇴 多明尼加
-    "{name:'Albert Pujols [2006 傳奇]',year:2006,en:'Albert Pujols',nat:'🇩🇴',pos:'1B',av:'🔱',rar:'x',ovr:99,pit:false,era:[2006],stats:[88,99,88,78,99],story:'<hl>復古傳奇特別款</hl>・Albert Pujols・機器人・2006 WBC 多明尼加核心・史上最完整的打者之一。',skills:[{i:'🔱',n:'機器人',d:'得點圈打點無上限'},{i:'💣',n:'長打之王',d:'HR無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'David Ortiz [2006 傳奇]',year:2006,en:'David Ortiz',nat:'🇩🇴',pos:'DH',av:'🦁',rar:'x',ovr:99,pit:false,era:[2006],stats:[85,99,72,62,99],story:'<hl>復古傳奇特別款</hl>・David Ortiz・Big Papi・2006 WBC 多明尼加代表・最令投手恐懼的指定打擊。',skills:[{i:'🦁',n:'Big Papi',d:'得點圈打擊無上限'},{i:'🔥',n:'逆境英雄',d:'落後時 OVR+30%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Pedro Martínez [2009 傳奇]',year:2009,en:'Pedro Martínez',nat:'🇩🇴',pos:'SP',av:'🌟',rar:'x',ovr:99,pit:true,era:[2009],stats:[99,96,99,82,99],story:'<hl>復古傳奇特別款</hl>・Pedro Martínez・2009 WBC 多明尼加傳奇王牌・三冠王級的數據與壓倒性的支配力。',skills:[{i:'🌟',n:'支配者',d:'OPS 壓制永恆頂點'},{i:'💨',n:'三振藝術',d:'三振率無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "Albert Pujols [2006 傳奇]", "year": 2006, "en": "Albert Pujols", "nat": "🇩🇴", "pos": "1B", "av": "🔱", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [88, 99, 88, 78, 99], "story": "<hl>復古傳奇特別款</hl>・Albert Pujols・機器人・2006 WBC 多明尼加核心・史上最完整的打者之一。", "skills": [{"i": "🔱", "n": "機器人", "d": "得點圈打點無上限"}, {"i": "💣", "n": "長打之王", "d": "HR無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "David Ortiz [2006 傳奇]", "year": 2006, "en": "David Ortiz", "nat": "🇩🇴", "pos": "DH", "av": "🦁", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [85, 99, 72, 62, 99], "story": "<hl>復古傳奇特別款</hl>・David Ortiz・Big Papi・2006 WBC 多明尼加代表・最令投手恐懼的指定打擊。", "skills": [{"i": "🦁", "n": "Big Papi", "d": "得點圈打擊無上限"}, {"i": "🔥", "n": "逆境英雄", "d": "落後時 OVR+30%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Pedro Martínez [2009 傳奇]", "year": 2009, "en": "Pedro Martínez", "nat": "🇩🇴", "pos": "SP", "av": "🌟", "rar": "x", "ovr": 99, "pit": True, "era": [2009], "stats": [99, 96, 99, 82, 99], "story": "<hl>復古傳奇特別款</hl>・Pedro Martínez・2009 WBC 多明尼加傳奇王牌・三冠王級的數據與壓倒性的支配力。", "skills": [{"i": "🌟", "n": "支配者", "d": "OPS 壓制永恆頂點"}, {"i": "💨", "n": "三振藝術", "d": "三振率無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
     # 🇻🇪 委內瑞拉
-    "{name:'Miguel Cabrera [2006 傳奇]',year:2006,en:'Miguel Cabrera',nat:'🇻🇪',pos:'3B',av:'🏆',rar:'x',ovr:99,pit:false,era:[2006],stats:[92,99,85,72,99],story:'<hl>復古傳奇特別款</hl>・Miguel Cabrera・Miggy・三冠王・2006 WBC 委內瑞拉最強打者・史上最偉大的右打之一。',skills:[{i:'🏆',n:'三冠王',d:'打擊全數據無上限'},{i:'💣',n:'右打之神',d:'HR無上限'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Omar Vizquel [2006 傳奇]',year:2006,en:'Omar Vizquel',nat:'🇻🇪',pos:'SS',av:'✨',rar:'x',ovr:99,pit:false,era:[2006],stats:[82,72,85,99,97],story:'<hl>復古傳奇特別款</hl>・Omar Vizquel・11 座 MLB 黃金手套・史上守備最優雅的游擊手・委內瑞拉棒球永恆象徵・每一次接球都是藝術。',skills:[{i:'✨',n:'守備藝術',d:'守備無上限'},{i:'💎',n:'黃金手套之神',d:'失誤率永久清零'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Félix Hernández [2009 傳奇]',year:2009,en:'Félix Hernández',nat:'🇻🇪',pos:'SP',av:'👑',rar:'x',ovr:99,pit:true,era:[2009],stats:[99,94,97,88,99],story:'<hl>復古傳奇特別款</hl>・Félix Hernández・委內瑞拉之王・Cy Young 得主・2009 WBC 親口說是生涯最重要一場・8.2 局封鎖幫委內瑞拉晉級・以壓倒性球威主宰打線。',skills:[{i:'👑',n:'委內瑞拉之王',d:'投球力無上限'},{i:'🔥',n:'Cy Young 等級',d:'防禦率永久最低'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "Miguel Cabrera [2006 傳奇]", "year": 2006, "en": "Miguel Cabrera", "nat": "🇻🇪", "pos": "3B", "av": "🏆", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [92, 99, 85, 72, 99], "story": "<hl>復古傳奇特別款</hl>・Miguel Cabrera・Miggy・三冠王・2006 WBC 委內瑞拉最強打者・史上最偉大的右打之一。", "skills": [{"i": "🏆", "n": "三冠王", "d": "打擊全數據無上限"}, {"i": "💣", "n": "右打之神", "d": "HR無上限"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Omar Vizquel [2006 傳奇]", "year": 2006, "en": "Omar Vizquel", "nat": "🇻🇪", "pos": "SS", "av": "✨", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [82, 72, 85, 99, 97], "story": "<hl>復古傳奇特別款</hl>・Omar Vizquel・11 座 MLB 黃金手套・史上守備最優雅的游擊手・委內瑞拉棒球永恆象徵・每一次接球都是藝術。", "skills": [{"i": "✨", "n": "守備藝術", "d": "守備無上限"}, {"i": "💎", "n": "黃金手套之神", "d": "失誤率永久清零"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Félix Hernández [2009 傳奇]", "year": 2009, "en": "Félix Hernández", "nat": "🇻🇪", "pos": "SP", "av": "👑", "rar": "x", "ovr": 99, "pit": True, "era": [2009], "stats": [99, 94, 97, 88, 99], "story": "<hl>復古傳奇特別款</hl>・Félix Hernández・委內瑞拉之王・Cy Young 得主・2009 WBC 親口說是生涯最重要一場・8.2 局封鎖幫委內瑞拉晉級・以壓倒性球威主宰打線。", "skills": [{"i": "👑", "n": "委內瑞拉之王", "d": "投球力無上限"}, {"i": "🔥", "n": "Cy Young 等級", "d": "防禦率永久最低"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
     # 🇨🇺 古巴
-    "{name:'Frederich Cepeda [2006 傳奇]',year:2006,en:'Frederich Cepeda',nat:'🇨🇺',pos:'LF',av:'🦅',rar:'x',ovr:99,pit:false,era:[2006],stats:[95,90,82,82,99],story:'<hl>復古傳奇特別款</hl>・Frederich Cepeda・古巴棒球象徵・三屆 WBC 常勝將軍・整個世代最恐怖的古巴打者。',skills:[{i:'🦅',n:'古巴之鷹',d:'打擊率永恆頂點'},{i:'🔥',n:'三屆老將',d:'關鍵打擊+40%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Yoenis Cespedes [2009 傳奇]',year:2009,en:'Yoenis Cespedes',nat:'🇨🇺',pos:'CF',av:'💨',rar:'x',ovr:99,pit:false,era:[2009],stats:[88,95,82,95,99],story:'<hl>復古傳奇特別款</hl>・Yoenis Cespedes・2013 WBC 古巴砲手・驚人的工具型天賦・速度與長打並存的全能外野手。',skills:[{i:'💨',n:'工具型天才',d:'速度+長打無上限'},{i:'💣',n:'砲轟外野',d:'HR+40%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'José Abreu [2013 傳奇]',year:2013,en:'José Abreu',nat:'🇨🇺',pos:'1B',av:'💪',rar:'x',ovr:99,pit:false,era:[2013],stats:[85,99,72,78,99],story:'<hl>復古傳奇特別款</hl>・José Abreu・2013 WBC 古巴核心一壘手・赴美後立刻成為 MLB 頂尖強打・古巴棒球的最後傳承。',skills:[{i:'💪',n:'古巴傳承',d:'長打率無上限'},{i:'🔱',n:'新人王',d:'OVR永恆99'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "Frederich Cepeda [2006 傳奇]", "year": 2006, "en": "Frederich Cepeda", "nat": "🇨🇺", "pos": "LF", "av": "🦅", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [95, 90, 82, 82, 99], "story": "<hl>復古傳奇特別款</hl>・Frederich Cepeda・古巴棒球象徵・三屆 WBC 常勝將軍・整個世代最恐怖的古巴打者。", "skills": [{"i": "🦅", "n": "古巴之鷹", "d": "打擊率永恆頂點"}, {"i": "🔥", "n": "三屆老將", "d": "關鍵打擊+40%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Yoenis Cespedes [2009 傳奇]", "year": 2009, "en": "Yoenis Cespedes", "nat": "🇨🇺", "pos": "CF", "av": "💨", "rar": "x", "ovr": 99, "pit": False, "era": [2009], "stats": [88, 95, 82, 95, 99], "story": "<hl>復古傳奇特別款</hl>・Yoenis Cespedes・2013 WBC 古巴砲手・驚人的工具型天賦・速度與長打並存的全能外野手。", "skills": [{"i": "💨", "n": "工具型天才", "d": "速度+長打無上限"}, {"i": "💣", "n": "砲轟外野", "d": "HR+40%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "José Abreu [2013 傳奇]", "year": 2013, "en": "José Abreu", "nat": "🇨🇺", "pos": "1B", "av": "💪", "rar": "x", "ovr": 99, "pit": False, "era": [2013], "stats": [85, 99, 72, 78, 99], "story": "<hl>復古傳奇特別款</hl>・José Abreu・2013 WBC 古巴核心一壘手・赴美後立刻成為 MLB 頂尖強打・古巴棒球的最後傳承。", "skills": [{"i": "💪", "n": "古巴傳承", "d": "長打率無上限"}, {"i": "🔱", "n": "新人王", "d": "OVR永恆99"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
     # 🇵🇷 波多黎各
-    "{name:'Carlos Beltrán [2006 傳奇]',year:2006,en:'Carlos Beltrán',nat:'🇵🇷',pos:'CF',av:'⭐',rar:'x',ovr:99,pit:false,era:[2006],stats:[90,88,90,92,99],story:'<hl>復古傳奇特別款</hl>・Carlos Beltrán・波多黎各 WBC 精神隊長・攻守跑三項全能・中外野史上最完整的球員之一。',skills:[{i:'⭐',n:'五工具球員',d:'全數據無上限'},{i:'👑',n:'波多黎各隊長',d:'全隊 OVR+15%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Carlos Delgado [2009 傳奇]',year:2009,en:'Carlos Delgado',nat:'🇵🇷',pos:'1B',av:'🔱',rar:'x',ovr:99,pit:false,era:[2009],stats:[88,99,88,72,99],story:'<hl>復古傳奇特別款</hl>・Carlos Delgado・2009 WBC 波多黎各最強打者・左打長砲・職涯超過 470 支全壘打的恐怖打線核心。',skills:[{i:'🔱',n:'左打大砲',d:'HR無上限'},{i:'💣',n:'波多黎各砲手',d:'得點圈打點+40%'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
-    "{name:'Yadier Molina [2006 傳奇]',year:2006,en:'Yadier Molina',nat:'🇵🇷',pos:'C',av:'🛡️',rar:'x',ovr:99,pit:false,era:[2006],stats:[85,80,78,99,99],story:'<hl>復古傳奇特別款</hl>・Yadier Molina・史上最佳捕手・2006 WBC 波多黎各守護者・阻殺率與引導能力永恆登峰。',skills:[{i:'🛡️',n:'本壘守護神',d:'阻殺率永恆頂點'},{i:'🧠',n:'捕手之王',d:'投手 ERA 永久-1'},{i:'📸',n:'復古印記',d:'歷史加成+30%'}]}",
+    {"name": "Carlos Beltrán [2006 傳奇]", "year": 2006, "en": "Carlos Beltrán", "nat": "🇵🇷", "pos": "CF", "av": "⭐", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [90, 88, 90, 92, 99], "story": "<hl>復古傳奇特別款</hl>・Carlos Beltrán・波多黎各 WBC 精神隊長・攻守跑三項全能・中外野史上最完整的球員之一。", "skills": [{"i": "⭐", "n": "五工具球員", "d": "全數據無上限"}, {"i": "👑", "n": "波多黎各隊長", "d": "全隊 OVR+15%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Carlos Delgado [2009 傳奇]", "year": 2009, "en": "Carlos Delgado", "nat": "🇵🇷", "pos": "1B", "av": "🔱", "rar": "x", "ovr": 99, "pit": False, "era": [2009], "stats": [88, 99, 88, 72, 99], "story": "<hl>復古傳奇特別款</hl>・Carlos Delgado・2009 WBC 波多黎各最強打者・左打長砲・職涯超過 470 支全壘打的恐怖打線核心。", "skills": [{"i": "🔱", "n": "左打大砲", "d": "HR無上限"}, {"i": "💣", "n": "波多黎各砲手", "d": "得點圈打點+40%"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
+    {"name": "Yadier Molina [2006 傳奇]", "year": 2006, "en": "Yadier Molina", "nat": "🇵🇷", "pos": "C", "av": "🛡️", "rar": "x", "ovr": 99, "pit": False, "era": [2006], "stats": [85, 80, 78, 99, 99], "story": "<hl>復古傳奇特別款</hl>・Yadier Molina・史上最佳捕手・2006 WBC 波多黎各守護者・阻殺率與引導能力永恆登峰。", "skills": [{"i": "🛡️", "n": "本壘守護神", "d": "阻殺率永恆頂點"}, {"i": "🧠", "n": "捕手之王", "d": "投手 ERA 永久-1"}, {"i": "📸", "n": "復古印記", "d": "歷史加成+30%"}]},
 ]
+
+
+def legend_to_js(l: dict) -> str:
+    """Convert a legend Python dict to a JS object string."""
+    def sk(s): return "{" + f"i:{js_str(s['i'])},n:{js_str(s['n'])},d:{js_str(s['d'])}" + "}"
+    pos = l["pos"]
+    pos_js = ("[" + ",".join(js_str(p) for p in pos) + "]") if isinstance(pos, list) else js_str(pos)
+    era_js = "[" + ",".join(str(y) for y in l["era"]) + "]"
+    stats_js = "[" + ",".join(str(x) for x in l["stats"]) + "]"
+    skills_js = "[" + ",".join(sk(s) for s in l["skills"]) + "]"
+    parts = [
+        f"name:{js_str(l['name'])}", f"year:{l['year']}", f"en:{js_str(l['en'])}",
+        f"nat:{js_str(l['nat'])}", f"pos:{pos_js}", f"av:{js_str(l['av'])}",
+        f"rar:{js_str(l['rar'])}", f"ovr:{l['ovr']}", f"pit:{'true' if l['pit'] else 'false'}",
+        f"era:{era_js}", f"stats:{stats_js}", f"story:{js_str(l['story'])}", f"skills:{skills_js}",
+    ]
+    return "{" + ",".join(parts) + "}"
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -969,6 +988,36 @@ def make_entry(d: dict) -> str:
     return "{" + ",".join(fields) + "}"
 
 
+def make_player_dict(d: dict) -> dict:
+    """Build a player dict for JSON output. Call after make_entry() normalizes d['RTG_OVR']."""
+    pos = (d["pos"] or "OF").strip()
+    is_p = pos in PITCHER_POS
+    name_zh = (d["name_zh"] or "").strip()
+    name_en = (d["name_en"] or "").strip()
+    display = name_zh if name_zh else name_en
+    ovr = safe_int(d["RTG_OVR"])
+    sea = d["season"]
+    player = {
+        "name": display,
+        "year": int(sea) if sea else None,
+        "en": name_en,
+        "nat": NAT_TO_FLAG.get(d["nat"], "🌐"),
+        "pos": pos.split("/") if "/" in pos else pos,
+        "av": POS_AV.get(pos, "⚾"),
+        "rar": ovr_to_rar(ovr),
+        "ovr": ovr,
+        "pit": is_p,
+        "era": [int(sea)] if sea else [],
+        "stats": pit_stats(d) if is_p else bat_stats(d),
+        "story": make_story(d, is_p),
+        "skills": make_skills(d, is_p),
+        "excel": excel_stats(d, is_p),
+    }
+    if not is_p:
+        player["power"] = bat_power(d)
+    return player
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -1002,6 +1051,7 @@ def main() -> None:
         }
         by_nat[nat].append(d)
 
+    json_players: list[dict] = []
     lines: list[str] = []
     lines.append("/* ============================================================")
     lines.append("   Diamond Nations — players-all.js")
@@ -1043,6 +1093,7 @@ def main() -> None:
             lines.append(f"/* ── {SECTION_ZH.get(sec, sec)} ── */")
             for d in by_sec[sec]:
                 lines.append(make_entry(d) + ",")
+                json_players.append(make_player_dict(d))
 
     # ── 傳奇球員一般版（補上無 WBC 記錄的傳奇球員一般版）────────────────────────
     lines.append("")
@@ -1057,8 +1108,9 @@ def main() -> None:
     lines.append(f"/* {'═'*36}")
     lines.append("   📸 復古傳奇特別款（全 8 國）")
     lines.append(f"{'═'*36} */")
-    for entry in LEGENDS:
-        lines.append(entry + ",")
+    for l in LEGENDS:
+        lines.append(legend_to_js(l) + ",")
+        json_players.append(l)
 
     lines.append("")
     lines.append("];")
@@ -1070,6 +1122,11 @@ def main() -> None:
     total = sum(len(v) for v in by_nat.values()) + len(REGULAR_EXTRAS) + len(LEGENDS)
     size  = OUTPUT.stat().st_size / 1024
     print(f"✅ {OUTPUT}  ({total} players, {size:.0f} KB)")
+
+    OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_JSON.write_text(json.dumps(json_players, ensure_ascii=False, indent=2), encoding="utf-8")
+    json_size = OUTPUT_JSON.stat().st_size / 1024
+    print(f"✅ {OUTPUT_JSON}  ({len(json_players)} players, {json_size:.0f} KB)")
     print("Done.")
 
 

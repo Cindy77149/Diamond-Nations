@@ -541,6 +541,41 @@
       </div>
       <div class="install-card-note" id="install-app-note">支援裝置會顯示安裝按鈕；iPhone 請使用 Safari 的分享選單加入主畫面。</div>
     </div>
+    <div class="sec-hd">FastAPI 同步</div>
+    <div class="install-card backend-sync-card">
+      <div class="install-card-row backend-sync-row">
+        <div>
+          <div class="install-card-title">後端連線狀態</div>
+          <div class="install-card-sub" id="backend-sync-sub">尚未檢查 FastAPI 伺服器。</div>
+        </div>
+        <button class="install-app-btn backend-sync-btn secondary" id="backend-status-btn" type="button" onclick="refreshBackendStatus(true)">檢查連線</button>
+      </div>
+      <div class="backend-sync-pills">
+        <div class="backend-sync-pill" id="backend-status-pill">離線</div>
+        <div class="backend-sync-pill muted" id="backend-last-sync-pill">尚未同步</div>
+      </div>
+      <div class="backend-sync-actions">
+        <button class="install-app-btn backend-sync-btn" id="backend-save-btn" type="button" onclick="syncCurrentSaveToBackend()">同步目前存檔</button>
+        <button class="install-app-btn backend-sync-btn secondary" id="backend-load-btn" type="button" onclick="loadCurrentSaveFromBackend()">從後端讀取</button>
+      </div>
+      <div class="install-card-note" id="backend-sync-note">目前仍會照常使用本機 `localStorage`；當 FastAPI 在線時，可把自動存檔同步到後端，方便你把這個專案包成真正的前後端作品。</div>
+    </div>
+    <div class="sec-hd">作品集</div>
+    <div class="install-card portfolio-entry-card">
+      <div class="install-card-row backend-sync-row">
+        <div>
+          <div class="install-card-title">Diamond Nations Case Study</div>
+          <div class="install-card-sub">整理成面試版作品集，主打遊戲設計、資料系統、平衡調整與產品思維。</div>
+        </div>
+        <button class="install-app-btn portfolio-entry-btn ready" type="button" onclick="goPortfolio()">查看作品集</button>
+      </div>
+      <div class="backend-sync-pills">
+        <div class="backend-sync-pill">Game Design</div>
+        <div class="backend-sync-pill muted">Data Systems</div>
+        <div class="backend-sync-pill muted">Fantasy Sports Fit</div>
+      </div>
+      <div class="install-card-note">如果你要投的是范特西籃球資料科學家，這頁會比直接給遊戲畫面更容易讓對方理解你不只會分析，還懂玩家體驗與數值設計。</div>
+    </div>
     <div class="sec-hd">組隊設定</div>
     <div style="background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden;margin-bottom:14px">
       <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -619,25 +654,8 @@
 <div class="phone-home-indicator"></div>
 </div><!-- /.phone-device -->
 </div><!-- /.device-stage -->
-  <script src="players-all.js?v=90"></script>
-<script src="players-data.js?v=90"></script>
-<script src="nations/tw.js?v=90"></script>
-<script src="nations/jp.js?v=90"></script>
-<script src="nations/us.js?v=90"></script>
-<script src="nations/do.js?v=90"></script>
-<script src="nations/ve.js?v=90"></script>
-<script src="nations/kr.js?v=90"></script>
-<script src="nations/cu.js?v=90"></script>
-<script src="nations/pr.js?v=90"></script>
-<script src="nations-data.js?v=90"></script>
-<script src="packs-data.js?v=90"></script>
-<script src="coaches-data.js?v=90"></script>
-<script src="eras-data.js?v=90"></script>
-<script src="game-core.js?v=90"></script>
-<script src="game-home.js?v=90"></script>
-<script src="game-team.js?v=90"></script>
-<script src="game.js?v=90"></script>
-<script src="game-match.js?v=90"></script>
+  <script src="data-loader.js?v=90"></script>
+<script src="bootstrap.js?v=90"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));

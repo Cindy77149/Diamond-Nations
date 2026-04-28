@@ -551,11 +551,18 @@ function goScreen(id){
   if(id==='collection')renderCollection();
   if(id==='coach')renderCoach();
   if(id==='gacha'){applyRecruitTab();if(recruitTab==='scout')renderScoutScreen();}
-  if(id==='settings')updateSettingsStats();
+  if(id==='settings'){
+    updateSettingsStats();
+    if(typeof refreshBackendStatus==='function')refreshBackendStatus(false);
+  }
   const activeNav=id==='gacha'&&recruitTab==='scout'?'scout':id;
   document.querySelectorAll('.nav-item').forEach(el=>{
     el.classList.toggle('active',el.getAttribute('onclick')===`goScreen('${activeNav}')`);
   });
+}
+
+function goPortfolio(){
+  window.location.href='./portfolio.html';
 }
 
 /* ═══ HOME ═══ */
@@ -1274,6 +1281,7 @@ function updateSettingsStats(){
       :'關閉中：目前仍依卡片原始 OVR 計算。';
   }
   updateInstallPromptUI();
+  if(typeof updateBackendSyncUI==='function')updateBackendSyncUI();
 }
 function compactBenchToSlots(nextBench){
   const active=getActiveBench().filter(Boolean);
@@ -1383,7 +1391,11 @@ window.addEventListener('appinstalled',()=>{
   deferredInstallPrompt=null;
   updateInstallPromptUI();
 });
-window.addEventListener('load',()=>setTimeout(updateInstallPromptUI,300));
+function initInstallPromptUIAfterLoad(){
+  setTimeout(updateInstallPromptUI,300);
+}
+if(document.readyState==='complete')initInstallPromptUIAfterLoad();
+else window.addEventListener('load',initInstallPromptUIAfterLoad,{once:true});
 function showChangeNation(){document.getElementById('confirm-overlay').classList.add('show');}
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');}
 function resetScoutsState(){

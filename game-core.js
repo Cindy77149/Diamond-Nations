@@ -152,6 +152,7 @@ function saveToSlot(slot){
     const s=buildSaveable();
     if(slot===AUTO_SLOT)s._label='🔄 自動存檔';
     localStorage.setItem(SAVE_PREFIX+slot,JSON.stringify(s));
+    if(typeof queueBackendAutoSync==='function')queueBackendAutoSync(slot,s);
     return true;
   }catch(e){console.warn('Save failed:',e);return false;}
 }

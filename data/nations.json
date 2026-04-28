@@ -1,0 +1,178 @@
+[
+  {
+    "id": "tw", "flag": "🇹🇼", "name": "台灣", "desc": "CPBL 精英 · 旅外好手",
+    "bonus": "台灣球員 OVR +5%", "color": "#4adb6a",
+    "wbcHistory": [
+      {"year": 2006, "str": 74}, {"year": 2013, "str": 76}, {"year": 2017, "str": 72},
+      {"year": 2023, "str": 79}, {"year": 2026, "str": 81}
+    ],
+    "starters": [
+      {"name": "高志綱"}, {"name": "蔣少宏"}, {"name": "林家正"},
+      {"name": "吉力吉撈·鞏冠", "year": 2023}, {"name": "吉力吉撈·鞏冠", "year": 2026},
+      {"name": "彭政閔"}, {"name": "林智勝", "year": 2006}, {"name": "林智勝", "year": 2013}, {"name": "林智勝", "year": 2017},
+      {"name": "林益全", "year": 2013}, {"name": "林益全", "year": 2017}, {"name": "范國宸"},
+      {"name": "張育成", "year": 2023}, {"name": "張育成", "year": 2026},
+      {"name": "陳鏞基"}, {"name": "林立"},
+      {"name": "鄭宗哲", "year": 2023}, {"name": "鄭宗哲", "year": 2026},
+      {"name": "林子偉", "year": 2023}, {"name": "林子偉", "year": 2026},
+      {"name": "王威晨"}, {"name": "張政禹"},
+      {"name": "吳念庭", "year": 2023}, {"name": "吳念庭", "year": 2026},
+      {"name": "胡金龍"},
+      {"name": "江坤宇", "year": 2023}, {"name": "江坤宇", "year": 2026},
+      {"name": "周思齊"}, {"name": "王柏融"},
+      {"name": "林哲瑄"}, {"name": "張志豪"}, {"name": "郭天信"},
+      {"name": "陳晨威", "year": 2023}, {"name": "陳晨威", "year": 2026},
+      {"name": "陳傑憲", "year": 2023}, {"name": "陳傑憲", "year": 2026},
+      {"name": "Stuart Fairchild"},
+      {"name": "陽岱鋼"}, {"name": "成晉"}, {"name": "林安可"}, {"name": "宋晟睿"},
+      {"name": "林泓育", "year": 2013},
+      {"name": "王建民"}, {"name": "潘威倫"}, {"name": "黃子鵬"},
+      {"name": "吳哲源"}, {"name": "鄧愷威"},
+      {"name": "胡智爲", "year": 2026},
+      {"name": "江少慶", "year": 2017}, {"name": "江少慶", "year": 2023},
+      {"name": "陳仕朋"}, {"name": "林昱珉"}, {"name": "徐若熙"},
+      {"name": "古林睿煬"}, {"name": "張峻瑋"}, {"name": "林維恩"}, {"name": "陳柏毓"}, {"name": "鄭浩均"}, {"name": "莊陳仲敖"}, {"name": "沙子宸"},
+      {"name": "陳禹勳", "year": 2023},
+      {"name": "呂彥青"}, {"name": "王維中"}, {"name": "李振昌"}, {"name": "陳冠偉"}, {"name": "林凱威"}, {"name": "林詩翔"}, {"name": "張奕"}, {"name": "孫易磊"},
+      {"name": "宋家豪", "year": 2017}, {"name": "宋家豪", "year": 2023},
+      {"name": "陳冠宇", "year": 2023}, {"name": "陳冠宇", "year": 2026},
+      {"name": "郭泓志"},
+      {"name": "曾峻岳", "year": 2023}, {"name": "曾峻岳", "year": 2026}
+    ],
+    "legends": ["彭政閔 [2013 傳奇]", "王建民 [2013 傳奇]", "周思齊 [2013 傳奇]"]
+  },
+  {
+    "id": "jp", "flag": "🇯🇵", "name": "日本", "desc": "NPB 頂尖 · 日本武士",
+    "bonus": "投手 ERA -0.3", "color": "#f06070",
+    "wbcHistory": [
+      {"year": 2006, "str": 91, "champion": true}, {"year": 2009, "str": 92, "champion": true},
+      {"year": 2013, "str": 87}, {"year": 2017, "str": 86},
+      {"year": 2023, "str": 94, "champion": true}, {"year": 2026, "str": 93}
+    ],
+    "starters": [
+      {"name": "甲斐拓也"}, {"name": "中村悠平"},
+      {"name": "村上宗隆"}, {"name": "源田壯亮"}, {"name": "中田翔"},
+      {"name": "山田哲人"}, {"name": "牧秀悟"},
+      {"name": "松田宣浩"}, {"name": "坂本勇人"},
+      {"name": "吉田正尚"},
+      {"name": "大谷翔平", "year": 2023}, {"name": "大谷翔平", "year": 2026},
+      {"name": "鈴木誠也"}, {"name": "岡本和真"},
+      {"name": "山本由伸"}, {"name": "佐木朗希", "year": 2023}, {"name": "今永昇太"}, {"name": "戸郷翔征"},
+      {"name": "澤村拓一"}, {"name": "松井裕樹"}
+    ],
+    "legends": ["鈴木一朗 [2006 傳奇]", "松坂大輔 [2006 傳奇]", "松井秀喜 [2006 傳奇]"]
+  },
+  {
+    "id": "us", "flag": "🇺🇸", "name": "美國", "desc": "MLB 全明星",
+    "bonus": "打線 OVR +5%", "color": "#7aaaff",
+    "wbcHistory": [
+      {"year": 2006, "str": 78}, {"year": 2009, "str": 83}, {"year": 2013, "str": 84},
+      {"year": 2017, "str": 90, "champion": true}, {"year": 2023, "str": 91}, {"year": 2026, "str": 91}
+    ],
+    "starters": [
+      {"name": "Will Smith"}, {"name": "Bryce Harper"}, {"name": "Jeff McNeil"},
+      {"name": "Bobby Witt Jr."}, {"name": "Kyle Tucker"}, {"name": "Mike Trout"}, {"name": "Aaron Judge"},
+      {"name": "Giancarlo Stanton"},
+      {"name": "Paul Skenes"}, {"name": "Tarik Skubal"},
+      {"name": "Devin Williams"}, {"name": "Ryan Pressly"}, {"name": "Adam Ottavino"}
+    ],
+    "legends": ["Derek Jeter [2006 傳奇]", "Ken Griffey Jr. [2006 傳奇]", "Marcus Stroman [2017 傳奇]"]
+  },
+  {
+    "id": "do", "flag": "🇩🇴", "name": "多明尼加", "desc": "加勒比海強權",
+    "bonus": "長打率 +8%", "color": "#e05060",
+    "wbcHistory": [
+      {"year": 2006, "str": 84}, {"year": 2009, "str": 85},
+      {"year": 2013, "str": 93, "champion": true}, {"year": 2017, "str": 87},
+      {"year": 2023, "str": 87}, {"year": 2026, "str": 89}
+    ],
+    "starters": [
+      {"name": "Gary Sánchez"}, {"name": "Vladimir Guerrero Jr."}, {"name": "Robinson Canó"},
+      {"name": "Willy Adames"}, {"name": "Juan Soto"}, {"name": "Julio Rodríguez"}, {"name": "Fernando Tatis Jr."},
+      {"name": "Nelson Cruz"},
+      {"name": "David Ortiz", "year": 2006}, {"name": "David Ortiz", "year": 2009},
+      {"name": "Cristopher Sánchez", "year": 2026}, {"name": "Sandy Alcantara"},
+      {"name": "Pedro Martínez", "year": 2009},
+      {"name": "Johnny Cueto"}, {"name": "José De León", "year": 2026},
+      {"name": "Fernando Rodney"}, {"name": "Luis García", "year": 2023}, {"name": "Hansel Robles"},
+      {"name": "Albert Pujols"}
+    ],
+    "legends": ["Albert Pujols [2006 傳奇]", "David Ortiz [2006 傳奇]", "Pedro Martínez [2009 傳奇]"]
+  },
+  {
+    "id": "ve", "flag": "🇻🇪", "name": "委內瑞拉", "desc": "2026 WBC 冠軍",
+    "bonus": "牛棚能力 +8%", "color": "#f0c030",
+    "wbcHistory": [
+      {"year": 2006, "str": 82}, {"year": 2009, "str": 84}, {"year": 2013, "str": 80},
+      {"year": 2017, "str": 83}, {"year": 2023, "str": 82}, {"year": 2026, "str": 92, "champion": true}
+    ],
+    "starters": [
+      {"name": "Salvador Perez"}, {"name": "William Contreras"},
+      {"name": "Miguel Cabrera"}, {"name": "Jose Altuve"}, {"name": "Luis Arraez"}, {"name": "Eugenio Suárez"}, {"name": "Gleyber Torres"},
+      {"name": "Asdrúbal Cabrera"},
+      {"name": "Maikel Garcia", "year": 2026}, {"name": "Ronald Acuña Jr."}, {"name": "Jackson Chourio"},
+      {"name": "Pablo López"}, {"name": "Luis Severino"}, {"name": "José Berríos"}, {"name": "Eduardo Rodriguez", "year": 2026},
+      {"name": "Gregory Soto"}, {"name": "Héctor Neris"}, {"name": "Roansy Contreras"}, {"name": "Albert Abreu"}
+    ],
+    "legends": ["Miguel Cabrera [2006 傳奇]", "Ozzie Guillén [2006 傳奇]", "Andrés Galarraga [2006 傳奇]"]
+  },
+  {
+    "id": "kr", "flag": "🇰🇷", "name": "韓國", "desc": "KBO 精銳 · 太極標誌",
+    "bonus": "守備能力 +5%", "color": "#cc88ff",
+    "wbcHistory": [
+      {"year": 2006, "str": 87}, {"year": 2009, "str": 88}, {"year": 2013, "str": 82},
+      {"year": 2017, "str": 82}, {"year": 2023, "str": 85}, {"year": 2026, "str": 83}
+    ],
+    "starters": [
+      {"name": "梁義智"}, {"name": "朴炳鎬"},
+      {"name": "金慧成"}, {"name": "文保景"}, {"name": "李政厚"}, {"name": "羅成範"},
+      {"name": "秋信守"}, {"name": "李大浩"},
+      {"name": "金廣鉉"},
+      {"name": "柳賢振"},
+      {"name": "吳昇桓"}, {"name": "高永表"}, {"name": "朴世雄"}, {"name": "李勇燦"}
+    ],
+    "legends": ["李承燁 [2006 傳奇]", "朴贊浩 [2006 傳奇]", "柳賢振 [2013 傳奇]"]
+  },
+  {
+    "id": "cu", "flag": "🇨🇺", "name": "古巴", "desc": "國家隊傳統強權",
+    "bonus": "長打率 +6%", "color": "#e05050",
+    "wbcHistory": [
+      {"year": 2006, "str": 85}, {"year": 2009, "str": 82}, {"year": 2013, "str": 81},
+      {"year": 2017, "str": 78}, {"year": 2023, "str": 76}, {"year": 2026, "str": 74}
+    ],
+    "starters": [
+      {"name": "Frank Morejon"}, {"name": "Ariel Pestano"},
+      {"name": "José Abreu"}, {"name": "Ariel Martinez"}, {"name": "José Miguel Fernández"},
+      {"name": "Yoán Moncada"}, {"name": "Yuli Gurriel"},
+      {"name": "Frederich Cepeda", "year": 2009}, {"name": "Frederich Cepeda", "year": 2013},
+      {"name": "Alfredo Despaigne", "year": 2013}, {"name": "Alfredo Despaigne", "year": 2017},
+      {"name": "Yoenis Cespedes"}, {"name": "Yasmany Tomás"}, {"name": "Victor Mesa"},
+      {"name": "Yoandry Garlobo"}, {"name": "Yosvany Peraza"},
+      {"name": "Danny Betancourt"}, {"name": "Miguel Lahera"},
+      {"name": "Yariel Rodríguez"}, {"name": "Josimar Cousin"}, {"name": "Luis Romero"}
+    ],
+    "legends": ["Frederich Cepeda [2006 傳奇]", "Yoenis Cespedes [2013 傳奇]", "José Abreu [2013 傳奇]"]
+  },
+  {
+    "id": "pr", "flag": "🇵🇷", "name": "波多黎各", "desc": "加勒比海之星",
+    "bonus": "牛棚 OVR +6%", "color": "#cc4466",
+    "wbcHistory": [
+      {"year": 2006, "str": 80}, {"year": 2009, "str": 78}, {"year": 2013, "str": 89},
+      {"year": 2017, "str": 88}, {"year": 2023, "str": 83}, {"year": 2026, "str": 82}
+    ],
+    "starters": [
+      {"name": "Yadier Molina", "year": 2006}, {"name": "Yadier Molina", "year": 2017}, {"name": "Christian Vázquez"},
+      {"name": "Carlos Delgado"}, {"name": "Javy Lopez"},
+      {"name": "Francisco Lindor", "year": 2017}, {"name": "Francisco Lindor", "year": 2023},
+      {"name": "Carlos Correa"}, {"name": "Javier Báez"},
+      {"name": "Carlos Beltrán", "year": 2006}, {"name": "Carlos Beltrán", "year": 2009},
+      {"name": "Bryan Torres"}, {"name": "Luis Matos"},
+      {"name": "Ivan Rodriguez"},
+      {"name": "José De León"},
+      {"name": "Edwin Díaz"}, {"name": "Fernando Cabrera", "year": 2006}, {"name": "Fernando Cabrera", "year": 2013},
+      {"name": "Javier López"}, {"name": "Yacksel Ríos", "year": 2023}, {"name": "Yacksel Ríos", "year": 2026},
+      {"name": "Jorge López"}, {"name": "Fernando Cruz"}
+    ],
+    "legends": ["Carlos Beltrán [2006 傳奇]", "Carlos Delgado [2009 傳奇]", "Yadier Molina [2006 傳奇]"]
+  }
+]
