@@ -7,12 +7,12 @@
   const SCRIPT_ORDER = [
     'players-data.js?v=90',
     'nations-data.js?v=90',
-    'game-core.js?v=90',
-    'game-api.js?v=90',
-    'game-home.js?v=90',
-    'game-team.js?v=90',
-    'game.js?v=90',
-    'game-match.js?v=90',
+    'game/core.js?v=90',
+    'game/api.js?v=90',
+    'game/home.js?v=90',
+    'game/team.js?v=90',
+    'game/app.js?v=90',
+    'game/match.js?v=90',
   ];
 
   function ensureBootSplash() {

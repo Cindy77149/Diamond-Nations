@@ -101,18 +101,18 @@ uvicorn main:app --reload
 
 目前主要模組如下：
 
-- [`game-core.js`](./game-core.js)
-- [`game-api.js`](./game-api.js)
-- [`game-home.js`](./game-home.js)
-- [`game-team.js`](./game-team.js)
-- [`game-match.js`](./game-match.js)
-- [`game.js`](./game.js)
+- [`game/core.js`](./game/core.js)
+- [`game/api.js`](./game/api.js)
+- [`game/home.js`](./game/home.js)
+- [`game/team.js`](./game/team.js)
+- [`game/match.js`](./game/match.js)
+- [`game/app.js`](./game/app.js)
 
 ---
 
 ## 3. 模組分工
 
-### 3.1 `game-core.js`
+### 3.1 `game/core.js`
 
 這是整個遊戲的核心狀態與共用工具層。
 
@@ -139,7 +139,7 @@ uvicorn main:app --reload
 
 `GameState` 是整個遊戲狀態的中心，其他模組讀寫時會透過同步函式與其保持一致。
 
-### 3.2 `game-api.js`
+### 3.2 `game/api.js`
 
 這個模組處理前端和 FastAPI 的互動。
 
@@ -153,7 +153,7 @@ uvicorn main:app --reload
 
 這層讓專案不只是純本機 `localStorage` 遊戲，而是具備後端同步能力。
 
-### 3.3 `game-home.js`
+### 3.3 `game/home.js`
 
 這個模組負責首頁與日常留存系統。
 
@@ -166,7 +166,7 @@ uvicorn main:app --reload
 
 這部分是玩家回流與進度感的重要來源。
 
-### 3.4 `game-team.js`
+### 3.4 `game/team.js`
 
 這個模組負責組隊與名單管理。
 
@@ -180,7 +180,7 @@ uvicorn main:app --reload
 
 這層是玩家把收藏轉成真正 playable roster 的核心。
 
-### 3.5 `game-match.js`
+### 3.5 `game/match.js`
 
 這個模組負責比賽與進度模式。
 
@@ -196,7 +196,7 @@ uvicorn main:app --reload
 
 這是目前遊戲邏輯最重的一塊。
 
-### 3.6 `game.js`
+### 3.6 `game/app.js`
 
 這個模組是整體整合層，保留大量主流程與其他系統邏輯。
 
@@ -223,12 +223,12 @@ uvicorn main:app --reload
 3. `bootstrap.js` 在資料準備完成後依序載入遊戲模組
 4. `players-data.js` 先把原始球員資料正規化成 `ALL_PLAYERS`
 5. 其他遊戲模組開始初始化
-6. `game.js` 啟動時先讀每日任務、再讀取自動存檔
+6. `game/app.js` 啟動時先讀每日任務、再讀取自動存檔
 7. 若有存檔且國家存在，直接進主頁；否則進新手選國家流程
 8. 遊戲進行中，狀態寫回 `GameState`
 9. 存檔時同時寫入：
    - 本地 `localStorage`
-   - 若後端在線，透過 `game-api.js` 同步到 FastAPI
+   - 若後端在線，透過 `game/api.js` 同步到 FastAPI
 
 ---
 
@@ -278,7 +278,7 @@ uvicorn main:app --reload
 
 ## 7. 抽卡與收藏邏輯
 
-抽卡相關資料來自 `packs.json`，而前端抽卡流程主要在 `game.js`。
+抽卡相關資料來自 `packs.json`，而前端抽卡流程主要在 `game/app.js`。
 
 目前抽卡系統包含：
 
@@ -328,7 +328,7 @@ uvicorn main:app --reload
 
 ## 9. 比賽系統邏輯
 
-比賽模擬主要在 `game-match.js`。
+比賽模擬主要在 `game/match.js`。
 
 ### 9.1 對手建立
 
@@ -439,7 +439,7 @@ uvicorn main:app --reload
 
 ### 10.2 球探系統
 
-球探系統在 `game.js`。
+球探系統在 `game/app.js`。
 
 主要作用：
 
@@ -454,7 +454,7 @@ uvicorn main:app --reload
 
 ## 11. 每日任務與活動邏輯
 
-每日任務在 `game-home.js`。
+每日任務在 `game/home.js`。
 
 目前包含：
 
@@ -495,7 +495,7 @@ uvicorn main:app --reload
 
 - 前端可手動同步目前存檔
 - 也可從後端取回存檔
-- `game-core.js` 在 `saveToSlot()` 後會排程自動同步
+- `game/core.js` 在 `saveToSlot()` 後會排程自動同步
 
 ### 12.3 防損毀寫入
 
@@ -544,7 +544,7 @@ uvicorn main:app --reload
 
 目前架構已經比原型期清楚很多，但如果要再往更成熟產品前進，還有幾個方向：
 
-- 把 `game.js` 再繼續拆細
+- 把 `game/app.js` 再繼續拆細
 - 補更多比賽事件與真實棒球規則細節
 - 為數值平衡加入統計驗證與 simulation analytics
 - 把活動記錄也做成持久化資料

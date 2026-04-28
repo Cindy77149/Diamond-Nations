@@ -1,4 +1,4 @@
-const CACHE = 'diamond-nations-v120';
+const CACHE = 'diamond-nations-v121';
 const ASSETS = [
   './',
   './index.html',
@@ -10,12 +10,12 @@ const ASSETS = [
   './bootstrap.js',
   './players-data.js',
   './nations-data.js',
-  './game-core.js',
-  './game-api.js',
-  './game-home.js',
-  './game-team.js',
-  './game.js',
-  './game-match.js',
+  './game/core.js',
+  './game/api.js',
+  './game/home.js',
+  './game/team.js',
+  './game/app.js',
+  './game/match.js',
   './data/players.json',
   './data/nations.json',
   './data/packs.json',
